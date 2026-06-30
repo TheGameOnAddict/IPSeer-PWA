@@ -10,7 +10,7 @@
 <title>PDF Markup</title>
 <style>
 :root{
-  color-scheme:light dark;
+  color-scheme:dark;
   --text:#f5f5f7;
   --muted:rgba(245,245,247,.68);
   --blue:#0a84ff;
@@ -30,8 +30,8 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;
 }
 #app{
-  height:100dvh;
-  min-height:100vh;
+  height:100svh;
+  min-height:100svh;
   position:relative;
   overflow:hidden;
   background:
@@ -88,7 +88,7 @@ body{
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  padding:calc(100px + max(10px,var(--safe-top))) 10px calc(124px + max(18px,var(--safe-bottom))) 10px;
+  padding:calc(100px + max(10px,var(--safe-top))) 10px 150px 10px;
 }
 #stage{position:relative}
 canvas{
@@ -120,21 +120,21 @@ canvas{
   z-index:6;
   left:18px;
   right:18px;
-  bottom:calc(max(18px,var(--safe-bottom)) + 6px);
-  border-radius:30px;
-  padding:8px;
+  bottom:calc(max(26px,var(--safe-bottom)) + 18px);
+  border-radius:28px;
+  padding:7px;
   display:grid;
-  grid-template-columns:52px 1fr 52px;
-  gap:8px;
+  grid-template-columns:50px 1fr 50px;
+  gap:7px;
   align-items:center;
 }
 .iconBtn{
   border:0;
-  border-radius:22px;
-  height:50px;
+  border-radius:21px;
+  height:48px;
   background:var(--button);
   color:var(--text);
-  font-size:21px;
+  font-size:20px;
   font-weight:850;
   display:flex;
   align-items:center;
@@ -144,18 +144,17 @@ canvas{
 .iconBtn:disabled{opacity:.35}
 #centerControls{
   min-width:0;
-  height:50px;
-  border-radius:22px;
+  height:48px;
+  border-radius:21px;
   background:rgba(255,255,255,.08);
   padding:4px;
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:4px;
+  grid-template-columns:1fr;
   box-shadow:inset 0 1px 4px rgba(0,0,0,.18);
 }
 .actionBtn{
   border:0;
-  border-radius:18px;
+  border-radius:17px;
   background:transparent;
   color:var(--text);
   font-size:15px;
@@ -166,7 +165,7 @@ canvas{
   box-shadow:0 7px 18px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.18);
 }
 #viewControls{display:grid;grid-template-columns:1fr 1fr;gap:4px}
-#editControls{display:none;grid-template-columns:1fr 1fr;gap:4px}
+#editControls{display:none;grid-template-columns:1fr 1fr 1fr;gap:4px}
 body.editing #viewControls{display:none}
 body.editing #editControls{display:grid}
 body.editing #editBtn{background:linear-gradient(180deg,rgba(10,132,255,.95),rgba(0,102,220,.95));color:white}
@@ -175,7 +174,7 @@ body.editing #editBtn{background:linear-gradient(180deg,rgba(10,132,255,.95),rgb
   z-index:20;
   left:50%;
   transform:translateX(-50%);
-  bottom:calc(98px + max(22px,var(--safe-bottom)));
+  bottom:calc(118px + max(22px,var(--safe-bottom)));
   padding:9px 13px;
   border-radius:999px;
   background:rgba(20,20,30,.82);
@@ -206,7 +205,7 @@ body.editing #editBtn{background:linear-gradient(180deg,rgba(10,132,255,.95),rgb
     <div id="empty" class="frost">
       <div id="emptyIcon">📄</div>
       <h1>Open a PDF</h1>
-      <p>Swipe pages in view mode. Tap Edit to draw rectangles or circles.</p>
+      <p>Swipe pages in view mode. Tap Edit to draw or erase shapes.</p>
     </div>
   </div>
 
@@ -220,6 +219,7 @@ body.editing #editBtn{background:linear-gradient(180deg,rgba(10,132,255,.95),rgb
       <div id="editControls">
         <button id="rectTool" class="actionBtn active" disabled>Rect</button>
         <button id="circleTool" class="actionBtn" disabled>Circle</button>
+        <button id="eraseTool" class="actionBtn" disabled>Erase</button>
       </div>
     </div>
     <button id="editBtn" class="iconBtn" disabled aria-label="Edit">✎</button>
@@ -244,12 +244,27 @@ function loadShapes(){shapesByPage=JSON.parse(localStorage.getItem('annotations_
 function pageKey(){return String(pageNum);}
 function currentShapes(){if(!shapesByPage[pageKey()])shapesByPage[pageKey()]=[];return shapesByPage[pageKey()];}
 function setEditMode(on){editMode=on;document.body.classList.toggle('editing',editMode);editBtn.textContent=editMode?'✓':'✎';toast(editMode?'Edit mode':'View mode');}
-function setTool(t){tool=t;rectTool.classList.toggle('active',t==='rect');circleTool.classList.toggle('active',t==='circle');}
+function setTool(t){
+  tool=t;
+  rectTool.classList.toggle('active',t==='rect');
+  circleTool.classList.toggle('active',t==='circle');
+  eraseTool.classList.toggle('active',t==='erase');
+}
 function pos(e){const r=drawCanvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};}
 function makeShape(a,b,type){return{type,x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)};}
 function drawShape(s){const w0=drawCanvas.clientWidth,h0=drawCanvas.clientHeight,x=s.x*w0,y=s.y*h0,w=s.w*w0,h=s.h*h0;if(s.type==='rect'){drawCtx.beginPath();drawCtx.roundRect(x,y,w,h,7);drawCtx.fill();drawCtx.stroke();}else{drawCtx.beginPath();drawCtx.ellipse(x+w/2,y+h/2,Math.abs(w/2),Math.abs(h/2),0,0,Math.PI*2);drawCtx.fill();drawCtx.stroke();}}
 function drawAll(preview=false){drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);const scale=drawCanvas.width/drawCanvas.clientWidth;drawCtx.save();drawCtx.scale(scale,scale);drawCtx.lineWidth=3;drawCtx.strokeStyle='#ff453a';drawCtx.fillStyle='rgba(255,69,58,.13)';currentShapes().forEach(drawShape);if(preview&&start&&current)drawShape(makeShape(start,current,tool));drawCtx.restore();}
-function eraseAt(p){const arr=currentShapes();for(let i=arr.length-1;i>=0;i--){const s=arr[i];if(p.x>=s.x&&p.x<=s.x+s.w&&p.y>=s.y&&p.y<=s.y+s.h){arr.splice(i,1);saveShapes();drawAll(false);toast('Shape erased');return true;}}return false;}
+function eraseAt(p){
+  const arr=currentShapes();
+  for(let i=arr.length-1;i>=0;i--){
+    const s=arr[i];
+    if(p.x>=s.x&&p.x<=s.x+s.w&&p.y>=s.y&&p.y<=s.y+s.h){
+      arr.splice(i,1);saveShapes();drawAll(false);toast('Shape erased');return true;
+    }
+  }
+  toast('No shape hit');
+  return false;
+}
 
 async function renderPage(n){
   if(!doc||rendering)return; rendering=true;
@@ -268,12 +283,34 @@ async function renderPage(n){
 function goPrev(){if(pageNum>1){pageNum--;renderPage(pageNum);}}
 function goNext(){if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum);}}
 openBtn.onclick=()=>file.click();
-file.onchange=async()=>{const f=file.files[0];if(!f)return;pdfKey=f.name;titleMain.textContent=f.name;loadShapes();doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;pageNum=1;empty.hidden=true;stage.hidden=false;[prev,next,rectTool,circleTool,editBtn].forEach(b=>b.disabled=false);setTool('rect');setEditMode(false);await renderPage(pageNum);};
-prev.onclick=goPrev; next.onclick=goNext; editBtn.onclick=()=>setEditMode(!editMode); rectTool.onclick=()=>setTool('rect'); circleTool.onclick=()=>setTool('circle');
+file.onchange=async()=>{const f=file.files[0];if(!f)return;pdfKey=f.name;titleMain.textContent=f.name;loadShapes();doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;pageNum=1;empty.hidden=true;stage.hidden=false;[prev,next,rectTool,circleTool,eraseTool,editBtn].forEach(b=>b.disabled=false);setTool('rect');setEditMode(false);await renderPage(pageNum);};
+prev.onclick=goPrev; next.onclick=goNext; editBtn.onclick=()=>setEditMode(!editMode); rectTool.onclick=()=>setTool('rect'); circleTool.onclick=()=>setTool('circle'); eraseTool.onclick=()=>setTool('erase');
 
-drawCanvas.addEventListener('pointerdown',e=>{if(!doc)return;drawCanvas.setPointerCapture(e.pointerId);const p=pos(e);if(!editMode){swipeStart={x:e.clientX,y:e.clientY,t:Date.now()};start=null;return;}start=p;current=start;});
-drawCanvas.addEventListener('pointermove',e=>{if(editMode&&start){current=pos(e);drawAll(true);}});
-drawCanvas.addEventListener('pointerup',e=>{if(!doc)return;if(!editMode&&swipeStart){const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y,dt=Date.now()-swipeStart.t;swipeStart=null;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4&&dt<700){dx<0?goNext():goPrev();return;}eraseAt(pos(e));return;}if(editMode&&start){current=pos(e);const s=makeShape(start,current,tool);start=null;current=null;if(s.w>.01&&s.h>.01){currentShapes().push(s);saveShapes();}drawAll(false);}});
+drawCanvas.addEventListener('pointerdown',e=>{
+  if(!doc)return;
+  drawCanvas.setPointerCapture(e.pointerId);
+  const p=pos(e);
+  if(!editMode){
+    swipeStart={x:e.clientX,y:e.clientY,t:Date.now()};
+    start=null;return;
+  }
+  if(tool==='erase'){eraseAt(p);start=null;return;}
+  start=p;current=start;
+});
+drawCanvas.addEventListener('pointermove',e=>{if(editMode&&start&&tool!=='erase'){current=pos(e);drawAll(true);}});
+drawCanvas.addEventListener('pointerup',e=>{
+  if(!doc)return;
+  if(!editMode&&swipeStart){
+    const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y,dt=Date.now()-swipeStart.t;swipeStart=null;
+    if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4&&dt<700){dx<0?goNext():goPrev();return;}
+    return;
+  }
+  if(editMode&&start&&tool!=='erase'){
+    current=pos(e);const s=makeShape(start,current,tool);start=null;current=null;
+    if(s.w>.01&&s.h>.01){currentShapes().push(s);saveShapes();}
+    drawAll(false);
+  }
+});
 let resizeTimer=null;addEventListener('resize',()=>{if(!doc)return;clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderPage(pageNum),250);});
 </script>
 </body>
