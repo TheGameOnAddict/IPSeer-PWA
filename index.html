@@ -48,22 +48,12 @@ body::before{
 #title{text-align:center;min-width:0;width:100%;cursor:pointer}
 #titleMain{font-size:15px;line-height:18px;font-weight:760;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:font-size .15s}
 #titleSub{
-  margin:2px auto 0;width:max-content;max-width:160px;border-radius:999px;padding:2px 8px 3px;
+  margin:2px auto 0;width:max-content;max-width:180px;border-radius:999px;padding:2px 8px 3px;
   background:rgba(255,255,255,.09);color:var(--muted);font-size:11px;line-height:12px;font-weight:780;
 }
 #pageJump{
-  display:none;
-  margin:2px auto 0;
-  width:96px;
-  border:0;
-  outline:0;
-  border-radius:999px;
-  padding:3px 8px 4px;
-  background:rgba(255,255,255,.16);
-  color:var(--text);
-  text-align:center;
-  font-size:15px;
-  font-weight:850;
+  display:none;margin:2px auto 0;width:96px;border:0;outline:0;border-radius:999px;padding:3px 8px 4px;
+  background:rgba(255,255,255,.16);color:var(--text);text-align:center;font-size:15px;font-weight:850;
 }
 body.jumping #titleMain{font-size:11px;color:var(--muted)}
 body.jumping #titleSub{display:none}
@@ -78,27 +68,15 @@ body.jumping #pageJump{display:block}
 canvas{display:block;background:#fff;border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,.24)}
 #pdf{position:relative;z-index:0}
 #textHi{position:absolute;left:0;top:0;pointer-events:none;z-index:1}
-#textLayer{
-  position:absolute;left:0;top:0;z-index:2;
-  user-select:text;-webkit-user-select:text;
-  overflow:hidden;
-}
+#textLayer{position:absolute;left:0;top:0;z-index:2;user-select:text;-webkit-user-select:text;overflow:hidden}
 #textLayer span{
-  position:absolute;
-  white-space:pre;
-  transform-origin:0 0;
-  color:rgba(0,0,0,.015);
+  position:absolute;white-space:pre;transform-origin:0 0;color:rgba(0,0,0,.015);
   user-select:text;-webkit-user-select:text;
 }
 #draw{position:absolute;left:0;top:0;background:transparent;touch-action:none;z-index:3;pointer-events:none}
 body.editing #draw{pointer-events:auto}
 body.editing #textLayer{pointer-events:none;user-select:none;-webkit-user-select:none}
-.textHighlight{
-  position:absolute;
-  background:var(--highlight);
-  border-radius:2px;
-  mix-blend-mode:multiply;
-}
+.textHighlight{position:absolute;background:var(--highlight);border-radius:2px;mix-blend-mode:multiply}
 .textHighlight.active{background:var(--highlight-strong)}
 #empty{margin-top:36px;width:min(315px,86vw);border-radius:28px;padding:22px 18px;text-align:center}
 #emptyIcon{width:52px;height:52px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;font-size:25px;background:rgba(255,255,255,.11)}
@@ -106,6 +84,27 @@ body.editing #textLayer{pointer-events:none;user-select:none;-webkit-user-select
 #empty p{margin:0;color:var(--muted);line-height:1.32;font-size:14px;font-weight:560}
 
 #bottomArea{flex:0 0 auto;padding:7px 16px calc(env(safe-area-inset-bottom) + 4px);background:transparent}
+#chapterPanel{
+  display:none;margin-bottom:8px;border-radius:25px;padding:8px;max-height:34vh;overflow:auto;
+}
+body.chapters #chapterPanel{display:block}
+.chapterRow{
+  width:100%;border:0;border-radius:14px;background:rgba(255,255,255,.08);color:var(--text);
+  text-align:left;padding:9px 11px;margin-bottom:6px;font-size:13px;font-weight:720;
+}
+.chapterRow small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.chapterRow.level1{margin-left:10px;width:calc(100% - 10px)}
+.chapterRow.level2{margin-left:20px;width:calc(100% - 20px)}
+.chapterRow.level3{margin-left:30px;width:calc(100% - 30px)}
+#zoomPanel{
+  display:none;margin-bottom:8px;border-radius:25px;padding:9px;align-items:center;gap:8px;
+}
+body.zooming #zoomPanel{display:flex}
+.zoomBtn{
+  border:0;border-radius:17px;width:42px;height:38px;background:rgba(255,255,255,.10);color:var(--text);
+  font-size:20px;font-weight:900;
+}
+#zoomLabel{flex:1;text-align:center;font-size:14px;font-weight:850;color:var(--text)}
 #indexPreview{
   display:none;margin-bottom:6px;border-radius:20px;padding:9px 12px;color:var(--text);
   font-size:13px;line-height:1.25;font-weight:650;max-height:56px;overflow:hidden;
@@ -120,9 +119,7 @@ body.refining #lineRefiner{display:flex}
   background:rgba(255,255,255,.10);color:var(--text);font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .lineChip.off{opacity:.42;text-decoration:line-through}
-#indexPanel{
-  display:none;margin-bottom:8px;border-radius:25px;padding:8px 6px;align-items:center;gap:6px;
-}
+#indexPanel{display:none;margin-bottom:8px;border-radius:25px;padding:8px 6px;align-items:center;gap:6px}
 body.indexing #indexPanel{display:flex}
 body.refining #indexPanel{padding:5px 6px}
 #indexTrack{
@@ -140,12 +137,8 @@ body.refining .indexChip{padding:7px 11px;font-size:12px}
 .indexChip.near{transform:scale(.9);opacity:.7}
 .indexChip.active{transform:scale(1.18);opacity:1;background:rgba(255,214,10,.30);box-shadow:inset 0 0 0 1px rgba(255,214,10,.75)}
 .indexChip.pinned::after{content:" •";color:rgb(255,214,10)}
-.panelBtn{
-  border:0;border-radius:17px;width:36px;height:36px;background:rgba(255,255,255,.10);color:var(--text);font-size:18px;font-weight:900;
-}
-#utilityBar{
-  display:grid;grid-template-columns:42px 1fr 42px 42px;gap:8px;align-items:center;
-}
+.panelBtn{border:0;border-radius:17px;width:36px;height:36px;background:rgba(255,255,255,.10);color:var(--text);font-size:18px;font-weight:900}
+#utilityBar{display:grid;grid-template-columns:42px 1fr 42px 42px;gap:8px;align-items:center}
 .circleNav{
   border:0;border-radius:50%;width:42px;height:42px;background:rgba(35,37,44,.82);color:var(--text);
   font-size:23px;font-weight:850;display:grid;place-items:center;
@@ -158,14 +151,14 @@ body.refining .indexChip{padding:7px 11px;font-size:12px}
   border:1px solid var(--stroke);box-shadow:0 10px 26px rgba(0,0,0,.26), inset 0 1px rgba(255,255,255,.12);
   backdrop-filter:blur(32px) saturate(1.65);-webkit-backdrop-filter:blur(32px) saturate(1.65);
 }
-.actionBtn{border:0;border-radius:17px;background:transparent;color:var(--text);font-size:13px;font-weight:780}
+.actionBtn{border:0;border-radius:17px;background:transparent;color:var(--text);font-size:12px;font-weight:780}
 .actionBtn.active{background:rgba(255,255,255,.16);box-shadow:0 5px 14px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.15)}
-#viewControls{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+#viewControls{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}
 #editControls{display:none;grid-template-columns:1fr 1fr 1fr;gap:3px}
 body.editing #viewControls{display:none}
 body.editing #editControls{display:grid}
 body.editing #editBtn{background:linear-gradient(180deg,rgba(10,132,255,.94),rgba(0,102,220,.94));color:white}
-body.indexing #indexBtn{background:rgba(255,214,10,.20)}
+body.indexing #indexBtn, body.chapters #chaptersBtn, body.zooming #zoomToggleBtn{background:rgba(255,214,10,.20)}
 #toast{
   position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 120px);
   padding:8px 12px;border-radius:999px;background:rgba(20,20,30,.82);color:white;font-size:12px;font-weight:750;
@@ -198,11 +191,20 @@ body.indexing #indexBtn{background:rgba(255,214,10,.20)}
     <div id="empty" class="frost">
       <div id="emptyIcon">📄</div>
       <h1>Open a PDF</h1>
-      <p>Tap the page pill to jump pages. Use Index to scan callouts.</p>
+      <p>Chapters, zoom, saved place, index callouts, and markups.</p>
     </div>
   </div>
 
   <div id="bottomArea">
+    <div id="chapterPanel" class="frost"></div>
+
+    <div id="zoomPanel" class="frost">
+      <button id="zoomOut" class="zoomBtn">−</button>
+      <div id="zoomLabel">100%</div>
+      <button id="zoomIn" class="zoomBtn">+</button>
+      <button id="zoomFit" class="zoomBtn">Fit</button>
+    </div>
+
     <div id="indexPreview" class="frost">
       <div id="previewText">No index selected</div>
       <div id="previewHint">Tap this preview to refine highlighted lines</div>
@@ -219,6 +221,8 @@ body.indexing #indexBtn{background:rgba(255,214,10,.20)}
       <button id="prev" class="circleNav" disabled>‹</button>
       <div id="centerControls">
         <div id="viewControls">
+          <button id="chaptersBtn" class="actionBtn" disabled>Ch</button>
+          <button id="zoomToggleBtn" class="actionBtn" disabled>Zoom</button>
           <button id="indexBtn" class="actionBtn" disabled>Index</button>
           <button id="clearIndexBtn" class="actionBtn" disabled>Clear</button>
         </div>
@@ -240,10 +244,12 @@ import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
 
-let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false,refineMode=false;
+let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false,refineMode=false,chaptersMode=false,zoomMode=false;
 let shapesByPage={},start=null,current=null,swipeStart=null;
 let indexItemsByPage={}, activeIndex=null;
-let pinnedIndexes={}; // session only: not localStorage
+let pinnedIndexes={}; // session only
+let outlineItems=[];
+let zoomFactor=1; // 1 = fit width
 
 const pdfCanvas=pdf, pdfCtx=pdfCanvas.getContext('2d');
 const drawCanvas=draw, drawCtx=drawCanvas.getContext('2d');
@@ -251,18 +257,26 @@ const drawCanvas=draw, drawCtx=drawCanvas.getContext('2d');
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),900)}
 function saveShapes(){if(pdfKey)localStorage.setItem('annotations_'+pdfKey,JSON.stringify(shapesByPage))}
 function loadShapes(){shapesByPage=JSON.parse(localStorage.getItem('annotations_'+pdfKey)||'{}')}
+function savePlace(){if(pdfKey)localStorage.setItem('lastPlace_'+pdfKey,JSON.stringify({page:pageNum,zoom:zoomFactor}))}
+function loadPlace(){if(!pdfKey)return null;try{return JSON.parse(localStorage.getItem('lastPlace_'+pdfKey)||'null')}catch{return null}}
 function pageKey(){return String(pageNum)}
 function currentShapes(){if(!shapesByPage[pageKey()])shapesByPage[pageKey()]=[];return shapesByPage[pageKey()]}
 function pagePins(){if(!pinnedIndexes[pageKey()])pinnedIndexes[pageKey()]=[];return pinnedIndexes[pageKey()]}
 
+function closePanels(except=''){
+  if(except!=='index') { indexMode=false; refineMode=false; document.body.classList.remove('indexing','refining'); activeIndex=null; }
+  if(except!=='chapters') { chaptersMode=false; document.body.classList.remove('chapters'); }
+  if(except!=='zoom') { zoomMode=false; document.body.classList.remove('zooming'); }
+}
 function setEditMode(on){
   editMode=on;
-  if(editMode) setIndexMode(false);
+  if(editMode) closePanels('');
   document.body.classList.toggle('editing',editMode);
   editBtn.textContent=editMode?'✓':'✎';
   toast(editMode?'Edit mode':'View mode');
 }
 function setIndexMode(on){
+  closePanels(on?'index':'');
   indexMode=on; refineMode=false;
   document.body.classList.toggle('indexing',indexMode);
   document.body.classList.toggle('refining',false);
@@ -270,15 +284,24 @@ function setIndexMode(on){
   else activeIndex=null;
   renderTextHighlights();
 }
+function setChaptersMode(on){
+  closePanels(on?'chapters':'');
+  chaptersMode=on;
+  document.body.classList.toggle('chapters',chaptersMode);
+}
+function setZoomMode(on){
+  closePanels(on?'zoom':'');
+  zoomMode=on;
+  document.body.classList.toggle('zooming',zoomMode);
+  updateZoomLabel();
+}
 function setRefineMode(on){
   if(!activeIndex) return;
   refineMode=on;
   document.body.classList.toggle('refining',refineMode);
   renderPreview();
 }
-function setTool(t){
-  tool=t;rectTool.classList.toggle('active',t==='rect');circleTool.classList.toggle('active',t==='circle');eraseTool.classList.toggle('active',t==='erase');
-}
+function setTool(t){tool=t;rectTool.classList.toggle('active',t==='rect');circleTool.classList.toggle('active',t==='circle');eraseTool.classList.toggle('active',t==='erase')}
 function pos(e){const r=drawCanvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height}}
 function makeShape(a,b,type){return{type,x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)}}
 function drawShape(s){
@@ -316,24 +339,49 @@ function commitPageJump(){
 pageJump.addEventListener('keydown',e=>{if(e.key==='Enter')commitPageJump(); if(e.key==='Escape')document.body.classList.remove('jumping')});
 pageJump.addEventListener('blur',()=>{if(document.body.classList.contains('jumping'))commitPageJump()});
 
+async function pageFromDest(dest){
+  try{
+    let d=dest;
+    if(typeof d==='string') d=await doc.getDestination(d);
+    if(!Array.isArray(d) || !d[0]) return null;
+    const idx=await doc.getPageIndex(d[0]);
+    return idx+1;
+  }catch{return null}
+}
+async function flattenOutline(items,level=0,out=[]){
+  for(const item of items||[]){
+    const p=await pageFromDest(item.dest);
+    out.push({title:item.title||'Untitled',page:p,level});
+    if(item.items?.length) await flattenOutline(item.items,Math.min(level+1,3),out);
+  }
+  return out;
+}
+async function loadChapters(){
+  chapterPanel.innerHTML='';
+  const outline=await doc.getOutline();
+  outlineItems=await flattenOutline(outline||[]);
+  if(!outlineItems.length){
+    chapterPanel.innerHTML='<div style="padding:10px;color:var(--muted);font-size:13px;font-weight:700;">No PDF chapters found.</div>';
+    return;
+  }
+  for(const ch of outlineItems){
+    const b=document.createElement('button');
+    b.className='chapterRow level'+Math.min(ch.level,3);
+    b.innerHTML=`${ch.title}<small>${ch.page?'Page '+ch.page:'Page unavailable'}</small>`;
+    b.onclick=()=>{ if(ch.page){pageNum=ch.page;setChaptersMode(false);renderPage(pageNum);} };
+    chapterPanel.appendChild(b);
+  }
+}
+
 function clearTextHighlights(){textHi.innerHTML=''}
 function makeHiDiv(rect, active=false){
   const W=drawCanvas.clientWidth,H=drawCanvas.clientHeight;
   const d=document.createElement('div');
   d.className='textHighlight'+(active?' active':'');
-  d.style.left=(rect.x*W)+'px';
-  d.style.top=(rect.y*H)+'px';
-  d.style.width=(rect.w*W)+'px';
-  d.style.height=(Math.max(rect.h*H,2))+'px';
+  d.style.left=(rect.x*W)+'px';d.style.top=(rect.y*H)+'px';d.style.width=(rect.w*W)+'px';d.style.height=(Math.max(rect.h*H,2))+'px';
   return d;
 }
-function itemRects(item){
-  if(!item) return [];
-  if(item.selectedLines && item.selectedLines.length){
-    return item.lines.filter((_,i)=>item.selectedLines.includes(i)).flatMap(l=>l.rects);
-  }
-  return item.rects || [];
-}
+function itemRects(item){if(!item)return[];if(item.selectedLines&&item.selectedLines.length)return item.lines.filter((_,i)=>item.selectedLines.includes(i)).flatMap(l=>l.rects);return item.rects||[]}
 function renderTextHighlights(){
   clearTextHighlights();
   const items=indexItemsByPage[pageKey()]||[];
@@ -341,10 +389,7 @@ function renderTextHighlights(){
   const shown=[];
   items.forEach(it=>{ if(pins.includes(it.label)) shown.push({it,active:false}); });
   if(indexMode&&activeIndex) shown.push({it:activeIndex,active:true});
-  for(const row of shown){
-    const rects=itemRects(row.it);
-    for(const r of rects) textHi.appendChild(makeHiDiv(r,row.active));
-  }
+  for(const row of shown){for(const r of itemRects(row.it)) textHi.appendChild(makeHiDiv(r,row.active));}
 }
 function renderPreview(){
   if(!activeIndex){previewText.textContent='No index selected';lineRefiner.innerHTML='';return;}
@@ -356,63 +401,29 @@ function renderPreview(){
   if(!activeIndex.selectedLines) activeIndex.selectedLines=activeIndex.lines.map((_,i)=>i);
   activeIndex.lines.forEach((line,i)=>{
     const b=document.createElement('button');
-    b.className='lineChip';
-    b.textContent=line.text || `Line ${i+1}`;
+    b.className='lineChip';b.textContent=line.text||`Line ${i+1}`;
     if(!activeIndex.selectedLines.includes(i)) b.classList.add('off');
-    b.onclick=(e)=>{
-      e.stopPropagation();
-      const arr=activeIndex.selectedLines;
-      const idx=arr.indexOf(i);
-      if(idx>=0) arr.splice(idx,1); else arr.push(i);
-      b.classList.toggle('off');
-      renderTextHighlights();
-    };
+    b.onclick=(e)=>{e.stopPropagation();const arr=activeIndex.selectedLines;const idx=arr.indexOf(i);if(idx>=0)arr.splice(idx,1);else arr.push(i);b.classList.toggle('off');renderTextHighlights();};
     lineRefiner.appendChild(b);
   });
 }
 indexPreview.onclick=()=>setRefineMode(!refineMode);
 
 function styleCarousel(){
-  const chips=[...indexTrack.children];
-  if(!chips.length) return;
-  const trackRect=indexTrack.getBoundingClientRect();
-  const center=trackRect.left+trackRect.width/2;
-  let closest=null, best=Infinity;
-  chips.forEach((chip,i)=>{
-    const r=chip.getBoundingClientRect();
-    const c=r.left+r.width/2;
-    const dist=Math.abs(c-center);
-    chip.classList.remove('active','near');
-    if(dist<best){best=dist;closest={chip,i};}
-    if(dist<100) chip.classList.add('near');
-  });
-  if(closest){
-    const items=indexItemsByPage[pageKey()]||[];
-    closest.chip.classList.add('active');
-    const next=items[closest.i];
-    if(next && (!activeIndex || next.label!==activeIndex.label)){
-      activeIndex=next;
-      renderPreview();
-      renderTextHighlights();
-    }
-  }
+  const chips=[...indexTrack.children]; if(!chips.length) return;
+  const trackRect=indexTrack.getBoundingClientRect(); const center=trackRect.left+trackRect.width/2;
+  let closest=null,best=Infinity;
+  chips.forEach((chip,i)=>{const r=chip.getBoundingClientRect();const c=r.left+r.width/2;const dist=Math.abs(c-center);chip.classList.remove('active','near');if(dist<best){best=dist;closest={chip,i};}if(dist<100) chip.classList.add('near');});
+  if(closest){const items=indexItemsByPage[pageKey()]||[];closest.chip.classList.add('active');const next=items[closest.i];if(next&&(!activeIndex||next.label!==activeIndex.label)){activeIndex=next;renderPreview();renderTextHighlights();}}
 }
-
 function lineGroups(chunks){
   chunks.sort((a,b)=>a.y-b.y || a.x-b.x);
   const lines=[];
-  for(const c of chunks){
-    let line=lines.find(l=>Math.abs(l.y-c.y)<0.006);
-    if(!line){line={y:c.y,items:[]};lines.push(line);}
-    line.items.push(c);
-  }
+  for(const c of chunks){let line=lines.find(l=>Math.abs(l.y-c.y)<0.006);if(!line){line={y:c.y,items:[]};lines.push(line);}line.items.push(c);}
   lines.forEach(l=>{
-    l.items.sort((a,b)=>a.x-b.x);
-    l.text=l.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim();
-    const minX=Math.min(...l.items.map(i=>i.x));
-    const maxX=Math.max(...l.items.map(i=>i.x+i.w));
-    const minY=Math.min(...l.items.map(i=>i.y-i.h*.9));
-    const maxY=Math.max(...l.items.map(i=>i.y+i.h*.35));
+    l.items.sort((a,b)=>a.x-b.x);l.text=l.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim();
+    const minX=Math.min(...l.items.map(i=>i.x)); const maxX=Math.max(...l.items.map(i=>i.x+i.w));
+    const minY=Math.min(...l.items.map(i=>i.y-i.h*.9)); const maxY=Math.max(...l.items.map(i=>i.y+i.h*.35));
     l.rects=[{x:Math.max(0,minX-.003),y:Math.max(0,minY),w:Math.min(.98,maxX-minX+.006),h:Math.max(.006,maxY-minY)}];
   });
   return lines;
@@ -426,108 +437,64 @@ async function scanIndexesForPage(){
   const base=page.getViewport({scale:1});
   const chunks=[];
   for(const it of content.items){
-    const str=(it.str||'').trim();
-    if(!str) continue;
-    const x=it.transform[4]/base.width;
-    const y=1-(it.transform[5]/base.height);
-    const w=(it.width||0)/base.width;
-    const h=Math.max(.008, (Math.abs(it.transform[3])||8)/base.height);
+    const str=(it.str||'').trim(); if(!str) continue;
+    const x=it.transform[4]/base.width, y=1-(it.transform[5]/base.height), w=(it.width||0)/base.width, h=Math.max(.008,(Math.abs(it.transform[3])||8)/base.height);
     chunks.push({str,x,y,w,h});
   }
   const lines=lineGroups(chunks);
   const hits=[];
-  lines.forEach((l,idx)=>{
-    const m=l.text.match(/(^|\s)(-\d{1,4}[A-Z]?)(?=\s|$)/i);
-    if(m) hits.push({label:m[2],lineIndex:idx,y:l.y});
-  });
+  lines.forEach((l,idx)=>{const m=l.text.match(/(^|\s)(-\d{1,4}[A-Z]?)(?=\s|$)/i); if(m) hits.push({label:m[2],lineIndex:idx,y:l.y});});
   const items=hits.map((h,i)=>{
-    const next=hits[i+1];
-    const start=h.lineIndex;
-    const end=next?Math.max(start+1,next.lineIndex):Math.min(lines.length,start+4);
-    const selectedLines=[...Array(end-start).keys()];
+    const next=hits[i+1]; const start=h.lineIndex; const end=next?Math.max(start+1,next.lineIndex):Math.min(lines.length,start+4);
     const itemLines=lines.slice(start,end);
-    return {
-      label:h.label,
-      y:itemLines[0]?.y||h.y,
-      lines:itemLines,
-      selectedLines,
-      rects:itemLines.flatMap(l=>l.rects)
-    };
+    return {label:h.label,y:itemLines[0]?.y||h.y,lines:itemLines,selectedLines:[...Array(end-start).keys()],rects:itemLines.flatMap(l=>l.rects)};
   });
   indexItemsByPage[key]=items;
-  renderIndexCarousel();
-  toast(items.length?`Found ${items.length} indexes`:'No indexes found');
-  renderPreview();
-  renderTextHighlights();
+  renderIndexCarousel(); toast(items.length?`Found ${items.length} indexes`:'No indexes found'); renderPreview(); renderTextHighlights();
 }
 function renderIndexCarousel(){
-  const items=indexItemsByPage[pageKey()]||[];
-  indexTrack.innerHTML='';
-  if(!items.length){
-    const b=document.createElement('button');b.className='indexChip';b.textContent='No indexes';indexTrack.appendChild(b);return;
-  }
+  const items=indexItemsByPage[pageKey()]||[]; indexTrack.innerHTML='';
+  if(!items.length){const b=document.createElement('button');b.className='indexChip';b.textContent='No indexes';indexTrack.appendChild(b);return;}
   const pins=pagePins();
   items.forEach((it,i)=>{
-    const b=document.createElement('button');
-    b.className='indexChip';
-    b.textContent=it.label;
-    if(pins.includes(it.label)) b.classList.add('pinned');
-    b.onclick=()=>{
-      activeIndex=it;
-      const arr=pagePins();
-      const idx=arr.indexOf(it.label);
-      if(idx>=0) arr.splice(idx,1); else arr.push(it.label);
-      renderIndexCarousel(); renderPreview(); renderTextHighlights();
-      setTimeout(()=>{indexTrack.children[i]?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});styleCarousel();},20);
-      toast(idx>=0?`${it.label} unpinned`:`${it.label} pinned`);
-    };
+    const b=document.createElement('button'); b.className='indexChip'; b.textContent=it.label; if(pins.includes(it.label)) b.classList.add('pinned');
+    b.onclick=()=>{activeIndex=it;const arr=pagePins();const idx=arr.indexOf(it.label);if(idx>=0) arr.splice(idx,1); else arr.push(it.label);renderIndexCarousel();renderPreview();renderTextHighlights();setTimeout(()=>{indexTrack.children[i]?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});styleCarousel();},20);toast(idx>=0?`${it.label} unpinned`:`${it.label} pinned`);};
     indexTrack.appendChild(b);
   });
   setTimeout(styleCarousel,30);
 }
 let scrollTimer=null;
-indexTrack.addEventListener('scroll',()=>{
-  styleCarousel();
-  clearTimeout(scrollTimer);
-  scrollTimer=setTimeout(styleCarousel,80);
-});
-function bumpIndex(dir){
-  const items=indexItemsByPage[pageKey()]||[];
-  if(!items.length) return;
-  let i=activeIndex?items.findIndex(x=>x.label===activeIndex.label):-1;
-  i=(i+dir+items.length)%items.length;
-  activeIndex=items[i];
-  const chip=indexTrack.children[i];
-  if(chip) chip.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
-  setTimeout(()=>{styleCarousel();renderPreview();renderTextHighlights();},120);
-}
+indexTrack.addEventListener('scroll',()=>{styleCarousel();clearTimeout(scrollTimer);scrollTimer=setTimeout(styleCarousel,80);});
+function bumpIndex(dir){const items=indexItemsByPage[pageKey()]||[]; if(!items.length)return; let i=activeIndex?items.findIndex(x=>x.label===activeIndex.label):-1; i=(i+dir+items.length)%items.length; activeIndex=items[i]; const chip=indexTrack.children[i]; if(chip) chip.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'}); setTimeout(()=>{styleCarousel();renderPreview();renderTextHighlights();},120);}
 
 async function renderTextLayer(page, displayScale){
   textLayer.innerHTML='';
   const content=await page.getTextContent();
   const viewport=page.getViewport({scale:displayScale});
   for(const item of content.items){
-    const str=item.str||'';
-    if(!str.trim()) continue;
+    const str=item.str||''; if(!str.trim()) continue;
     const tx=pdfjsLib.Util.transform(viewport.transform,item.transform);
     const fontHeight=Math.hypot(tx[2],tx[3]) || 8;
     const span=document.createElement('span');
-    span.textContent=str;
-    span.style.left=tx[4]+'px';
-    span.style.top=(tx[5]-fontHeight)+'px';
-    span.style.fontSize=fontHeight+'px';
-    span.style.width=((item.width||0)*displayScale)+'px';
-    span.style.height=(fontHeight*1.3)+'px';
-    span.style.fontFamily='sans-serif';
+    span.textContent=str; span.style.left=tx[4]+'px'; span.style.top=(tx[5]-fontHeight)+'px'; span.style.fontSize=fontHeight+'px';
+    span.style.width=((item.width||0)*displayScale)+'px'; span.style.height=(fontHeight*1.3)+'px'; span.style.fontFamily='sans-serif';
     textLayer.appendChild(span);
   }
 }
-
+function updateZoomLabel(){zoomLabel.textContent=Math.round(zoomFactor*100)+'%'}
+function setZoom(z){
+  zoomFactor=Math.max(.75,Math.min(3,z));
+  updateZoomLabel();
+  savePlace();
+  renderPage(pageNum);
+}
 async function renderPage(n){
   if(!doc||rendering)return;rendering=true;
+  const oldX=viewer.scrollLeft, oldY=viewer.scrollTop;
   const page=await doc.getPage(n);
   const base=page.getViewport({scale:1});
-  const displayScale=(Math.max(280,viewer.clientWidth-4))/base.width;
+  const fitScale=(Math.max(280,viewer.clientWidth-4))/base.width;
+  const displayScale=fitScale*zoomFactor;
   const dpr=window.devicePixelRatio||1;
   const vp=page.getViewport({scale:displayScale*dpr});
   [pdfCanvas,drawCanvas].forEach(c=>{c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);c.style.width=(vp.width/dpr)+'px';c.style.height=(vp.height/dpr)+'px';});
@@ -536,11 +503,13 @@ async function renderPage(n){
   textLayer.style.width=(vp.width/dpr)+'px';textLayer.style.height=(vp.height/dpr)+'px';
   await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
   await renderTextLayer(page,displayScale);
-  titleSub.textContent=`Page ${pageNum} of ${doc.numPages}`;
+  titleSub.textContent=`Page ${pageNum} of ${doc.numPages} • ${Math.round(zoomFactor*100)}%`;
   prev.disabled=pageNum<=1;next.disabled=pageNum>=doc.numPages;
   activeIndex=null;clearTextHighlights();renderPreview();
   if(indexMode) await scanIndexesForPage();
   drawAll(false);renderTextHighlights();rendering=false;
+  if(n===pageNum){viewer.scrollLeft=oldX; viewer.scrollTop=oldY;}
+  savePlace();
 }
 function goPrev(){if(pageNum>1){pageNum--;renderPage(pageNum)}}
 function goNext(){if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum)}}
@@ -549,27 +518,68 @@ openBtn.onclick=()=>file.click();
 file.onchange=async()=>{
   const f=file.files[0];if(!f)return;
   pdfKey=f.name;titleMain.textContent=f.name;loadShapes();pinnedIndexes={};indexItemsByPage={};
-  doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;pageNum=1;
+  doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+  const place=loadPlace();
+  pageNum=Math.max(1,Math.min(doc.numPages,place?.page||1));
+  zoomFactor=Math.max(.75,Math.min(3,place?.zoom||1));
   empty.hidden=true;stage.hidden=false;
-  [prev,next,rectTool,circleTool,eraseTool,editBtn,indexBtn,clearIndexBtn].forEach(b=>b.disabled=false);
-  setTool('rect');setEditMode(false);setIndexMode(false);await renderPage(pageNum);
+  [prev,next,rectTool,circleTool,eraseTool,editBtn,indexBtn,clearIndexBtn,chaptersBtn,zoomToggleBtn].forEach(b=>b.disabled=false);
+  setTool('rect');setEditMode(false);setIndexMode(false);setZoomMode(false);setChaptersMode(false);
+  await loadChapters();
+  updateZoomLabel();
+  await renderPage(pageNum);
+  if(place?.page) toast(`Restored page ${pageNum}`);
 };
 prev.onclick=goPrev;next.onclick=goNext;editBtn.onclick=()=>setEditMode(!editMode);
 rectTool.onclick=()=>setTool('rect');circleTool.onclick=()=>setTool('circle');eraseTool.onclick=()=>setTool('erase');
 indexBtn.onclick=()=>setIndexMode(!indexMode);
 clearIndexBtn.onclick=()=>{pinnedIndexes[pageKey()]=[];activeIndex=null;renderIndexCarousel();renderTextHighlights();toast('Page highlights cleared')};
+chaptersBtn.onclick=()=>setChaptersMode(!chaptersMode);
+zoomToggleBtn.onclick=()=>setZoomMode(!zoomMode);
+zoomOut.onclick=()=>setZoom(zoomFactor-.25);
+zoomIn.onclick=()=>setZoom(zoomFactor+.25);
+zoomFit.onclick=()=>setZoom(1);
 idxPrev.onclick=()=>bumpIndex(-1);idxNext.onclick=()=>bumpIndex(1);
 
-stage.addEventListener('pointerdown',e=>{
+function beginSwipe(x,y){
   if(!doc || editMode) return;
-  swipeStart={x:e.clientX,y:e.clientY,t:Date.now()};
-});
-stage.addEventListener('pointerup',e=>{
-  if(!doc || editMode || !swipeStart)return;
-  const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y,dt=Date.now()-swipeStart.t;swipeStart=null;
-  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4&&dt<700){dx<0?goNext():goPrev();}
-});
+  swipeStart={x,y,t:Date.now(),sx:viewer.scrollLeft,sy:viewer.scrollTop};
+}
+function endSwipe(x,y){
+  if(!doc || editMode || !swipeStart) return;
+  const dx=x-swipeStart.x;
+  const dy=y-swipeStart.y;
+  const dt=Date.now()-swipeStart.t;
+  swipeStart=null;
 
+  // Only treat it as page navigation when it is clearly a fast horizontal swipe.
+  // This keeps vertical PDF scrolling and zoomed page panning from accidentally flipping pages.
+  if(Math.abs(dx)>72 && Math.abs(dx)>Math.abs(dy)*1.55 && dt<850){
+    dx<0 ? goNext() : goPrev();
+  }
+}
+
+// Pointer events work in the Home Screen PWA.
+viewer.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='touch' || e.pointerType==='pen' || e.pointerType==='mouse'){
+    beginSwipe(e.clientX,e.clientY);
+  }
+}, {passive:true});
+
+viewer.addEventListener('pointerup',e=>{
+  endSwipe(e.clientX,e.clientY);
+}, {passive:true});
+
+// Touch fallback for iOS/Safari oddities.
+viewer.addEventListener('touchstart',e=>{
+  const t=e.changedTouches[0];
+  if(t) beginSwipe(t.clientX,t.clientY);
+}, {passive:true});
+
+viewer.addEventListener('touchend',e=>{
+  const t=e.changedTouches[0];
+  if(t) endSwipe(t.clientX,t.clientY);
+}, {passive:true});
 drawCanvas.addEventListener('pointerdown',e=>{
   if(!doc||!editMode)return;drawCanvas.setPointerCapture(e.pointerId);const p=pos(e);
   if(tool==='erase'){eraseAt(p);start=null;return;}
@@ -584,6 +594,7 @@ drawCanvas.addEventListener('pointerup',e=>{
     drawAll(false);
   }
 });
+viewer.addEventListener('scroll',()=>{if(doc) savePlace();});
 let resizeTimer=null;addEventListener('resize',()=>{if(!doc)return;clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderPage(pageNum),250)});
 </script>
 </body>
