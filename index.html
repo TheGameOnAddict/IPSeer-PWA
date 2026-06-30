@@ -165,6 +165,92 @@ body.indexing #indexBtn, body.chapters #chaptersBtn, body.zooming #zoomToggleBtn
   opacity:0;transition:opacity .2s ease;pointer-events:none;
 }
 #toast.show{opacity:1}
+
+#topZoomBtn{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+body.indexing #clearIndexBtn{display:block}
+#clearIndexBtn{display:none}
+body.indexing #viewControls{grid-template-columns:1fr 1fr 1fr}
+body:not(.indexing) #viewControls{grid-template-columns:1fr 1fr}
+#chaptersBtn{display:none}
+#textLayer{
+  pointer-events:none !important;
+  user-select:none !important;
+  -webkit-user-select:none !important;
+}
+#copyBtn.active, body.copying #copyBtn{background:rgba(10,132,255,.22)}
+#copyPanel{
+  display:none;
+  margin-bottom:8px;
+  border-radius:25px;
+  padding:10px;
+  gap:10px;
+  align-items:center;
+  position:relative;
+}
+body.copying #copyPanel{display:flex}
+#copyTextPreview{
+  flex:1;
+  min-height:38px;
+  max-height:72px;
+  overflow:hidden;
+  border-radius:17px;
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  padding:8px 10px;
+  font-size:12px;
+  line-height:1.25;
+  font-weight:650;
+}
+#copyDoBtn{
+  border:0;
+  border-radius:17px;
+  height:38px;
+  padding:0 12px;
+  background:rgba(10,132,255,.25);
+  color:var(--text);
+  font-size:13px;
+  font-weight:850;
+}
+#copyControls{
+  display:none;
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+body.copying #copyControls{display:block}
+.copyGuide{
+  position:absolute;
+  background:rgba(10,132,255,.9);
+  border-radius:999px;
+  box-shadow:0 0 0 3px rgba(10,132,255,.16);
+  pointer-events:none;
+}
+#lineStartGuide,.lineEndGuide{right:6px;width:4px;height:18px}
+#charStartGuide,#charEndGuide{bottom:4px;width:18px;height:4px}
+#copyLineRange{
+  position:fixed;
+  z-index:30;
+  right:-78px;
+  top:24vh;
+  width:210px;
+  transform:rotate(90deg);
+  accent-color:#0a84ff;
+  display:none;
+}
+#copyCharStart,#copyCharEnd{
+  position:fixed;
+  z-index:30;
+  left:8vw;
+  width:84vw;
+  accent-color:#0a84ff;
+  display:none;
+}
+#copyCharStart{bottom:calc(env(safe-area-inset-bottom) + 86px)}
+#copyCharEnd{bottom:calc(env(safe-area-inset-bottom) + 58px)}
+body.copying #copyLineRange,
+body.copying #copyCharStart,
+body.copying #copyCharEnd{display:block}
+
 </style>
 </head>
 <body>
@@ -177,6 +263,7 @@ body.indexing #indexBtn, body.chapters #chaptersBtn, body.zooming #zoomToggleBtn
         <div id="titleSub">Open a PDF</div>
         <input id="pageJump" type="number" inputmode="numeric" min="1" placeholder="Page">
       </div>
+      <button id="topZoomBtn" class="iconBtn" disabled aria-label="Zoom">⌕</button>
       <input id="file" type="file" accept="application/pdf">
     </div>
   </div>
@@ -196,6 +283,15 @@ body.indexing #indexBtn, body.chapters #chaptersBtn, body.zooming #zoomToggleBtn
   </div>
 
   <div id="bottomArea">
+    <div id="copyPanel" class="frost">
+      <div id="copyTextPreview">Use the side handle to choose lines, then bottom handles to trim characters.</div>
+      <button id="copyDoBtn">Copy</button>
+    </div>
+
+    <input id="copyLineRange" type="range" min="0" max="0" value="0">
+    <input id="copyCharStart" type="range" min="0" max="0" value="0">
+    <input id="copyCharEnd" type="range" min="0" max="0" value="0">
+
     <div id="chapterPanel" class="frost"></div>
 
     <div id="zoomPanel" class="frost">
@@ -221,8 +317,7 @@ body.indexing #indexBtn, body.chapters #chaptersBtn, body.zooming #zoomToggleBtn
       <button id="prev" class="circleNav" disabled>‹</button>
       <div id="centerControls">
         <div id="viewControls">
-          <button id="chaptersBtn" class="actionBtn" disabled>Ch</button>
-          <button id="zoomToggleBtn" class="actionBtn" disabled>Zoom</button>
+          <button id="copyBtn" class="actionBtn" disabled>Copy</button>
           <button id="indexBtn" class="actionBtn" disabled>Index</button>
           <button id="clearIndexBtn" class="actionBtn" disabled>Clear</button>
         </div>
@@ -244,11 +339,13 @@ import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
 
-let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false,refineMode=false,chaptersMode=false,zoomMode=false;
+let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false,refineMode=false,chaptersMode=false,zoomMode=false,copyMode=false;
 let shapesByPage={},start=null,current=null,swipeStart=null;
 let indexItemsByPage={}, activeIndex=null;
 let pinnedIndexes={}; // session only
 let outlineItems=[];
+let pageLinesByPage={};
+let copyLineIndex=0, copyLineCount=1, copyCharStartVal=0, copyCharEndVal=0;
 let zoomFactor=1; // 1 = fit width
 
 const pdfCanvas=pdf, pdfCtx=pdfCanvas.getContext('2d');
@@ -267,6 +364,7 @@ function closePanels(except=''){
   if(except!=='index') { indexMode=false; refineMode=false; document.body.classList.remove('indexing','refining'); activeIndex=null; }
   if(except!=='chapters') { chaptersMode=false; document.body.classList.remove('chapters'); }
   if(except!=='zoom') { zoomMode=false; document.body.classList.remove('zooming'); }
+  if(except!=='copy') { copyMode=false; document.body.classList.remove('copying'); }
 }
 function setEditMode(on){
   editMode=on;
@@ -294,6 +392,12 @@ function setZoomMode(on){
   zoomMode=on;
   document.body.classList.toggle('zooming',zoomMode);
   updateZoomLabel();
+}
+function setCopyMode(on){
+  closePanels(on?'copy':'');
+  copyMode=on;
+  document.body.classList.toggle('copying',copyMode);
+  if(copyMode) buildCopyLinesForPage();
 }
 function setRefineMode(on){
   if(!activeIndex) return;
@@ -338,6 +442,23 @@ function commitPageJump(){
 }
 pageJump.addEventListener('keydown',e=>{if(e.key==='Enter')commitPageJump(); if(e.key==='Escape')document.body.classList.remove('jumping')});
 pageJump.addEventListener('blur',()=>{if(document.body.classList.contains('jumping'))commitPageJump()});
+
+let topSwipeStart=null;
+topbar.addEventListener('pointerdown',e=>{
+  if(!doc) return;
+  topSwipeStart={x:e.clientX,y:e.clientY,t:Date.now()};
+},{passive:true});
+topbar.addEventListener('pointerup',e=>{
+  if(!doc || !topSwipeStart) return;
+  const dy=e.clientY-topSwipeStart.y;
+  const dx=e.clientX-topSwipeStart.x;
+  const dt=Date.now()-topSwipeStart.t;
+  topSwipeStart=null;
+  if(dy>28 && Math.abs(dy)>Math.abs(dx)*1.2 && dt<700){
+    setChaptersMode(!chaptersMode);
+  }
+},{passive:true});
+
 
 async function pageFromDest(dest){
   try{
@@ -428,6 +549,64 @@ function lineGroups(chunks){
   });
   return lines;
 }
+
+function buildCopyLinesForPage(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length){
+    copyTextPreview.textContent='No text found on this page.';
+    return;
+  }
+  copyLineRange.max=Math.max(0,lines.length-1);
+  copyLineRange.value=Math.min(copyLineIndex,lines.length-1);
+  copyLineCount=1;
+  updateCopyPreview();
+}
+function updateCopyPreview(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length) return;
+  copyLineIndex=Math.max(0,Math.min(lines.length-1,Number(copyLineRange.value||0)));
+  const line=lines[copyLineIndex];
+  const text=line.text||'';
+  copyCharStart.max=Math.max(0,text.length);
+  copyCharEnd.max=Math.max(0,text.length);
+  if(Number(copyCharEnd.value)===0 || Number(copyCharEnd.value)>text.length) copyCharEnd.value=text.length;
+  copyCharStartVal=Math.min(Number(copyCharStart.value||0), text.length);
+  copyCharEndVal=Math.max(copyCharStartVal, Math.min(Number(copyCharEnd.value||text.length), text.length));
+  copyCharStart.value=copyCharStartVal;
+  copyCharEnd.value=copyCharEndVal;
+  copyTextPreview.textContent=text.slice(copyCharStartVal,copyCharEndVal)||text||'Blank line';
+  renderCopyHighlight(line, copyCharStartVal, copyCharEndVal);
+}
+function renderCopyHighlight(line,startChar,endChar){
+  if(!copyMode || !line) return;
+  clearTextHighlights();
+  const W=drawCanvas.clientWidth,H=drawCanvas.clientHeight;
+  const rect=line.rects?.[0];
+  if(!rect) return;
+  const text=line.text||'';
+  const len=Math.max(1,text.length);
+  const sx=startChar/len, ex=endChar/len;
+  textHi.appendChild(makeHiDiv({
+    x:rect.x+rect.w*sx,
+    y:rect.y,
+    w:Math.max(.005,rect.w*(ex-sx)),
+    h:rect.h
+  }, true));
+}
+async function copyCurrentSelection(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  const line=lines[copyLineIndex];
+  if(!line){toast('Nothing to copy');return;}
+  const text=(line.text||'').slice(copyCharStartVal,copyCharEndVal);
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Copied');
+  }catch{
+    const ta=document.createElement('textarea');
+    ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied');
+  }
+}
+
 async function scanIndexesForPage(){
   if(!doc) return;
   const key=pageKey();
@@ -442,6 +621,7 @@ async function scanIndexesForPage(){
     chunks.push({str,x,y,w,h});
   }
   const lines=lineGroups(chunks);
+  pageLinesByPage[key]=lines;
   const hits=[];
   lines.forEach((l,idx)=>{const m=l.text.match(/(^|\s)(-\d{1,4}[A-Z]?)(?=\s|$)/i); if(m) hits.push({label:m[2],lineIndex:idx,y:l.y});});
   const items=hits.map((h,i)=>{
@@ -471,8 +651,16 @@ async function renderTextLayer(page, displayScale){
   textLayer.innerHTML='';
   const content=await page.getTextContent();
   const viewport=page.getViewport({scale:displayScale});
+  const copyChunks=[];
   for(const item of content.items){
     const str=item.str||''; if(!str.trim()) continue;
+    copyChunks.push({
+      str,
+      x:item.transform[4]/page.view[2],
+      y:1-(item.transform[5]/page.view[3]),
+      w:(item.width||0)/page.view[2],
+      h:Math.max(.008,(Math.abs(item.transform[3])||8)/page.view[3])
+    });
     const tx=pdfjsLib.Util.transform(viewport.transform,item.transform);
     const fontHeight=Math.hypot(tx[2],tx[3]) || 8;
     const span=document.createElement('span');
@@ -480,6 +668,7 @@ async function renderTextLayer(page, displayScale){
     span.style.width=((item.width||0)*displayScale)+'px'; span.style.height=(fontHeight*1.3)+'px'; span.style.fontFamily='sans-serif';
     textLayer.appendChild(span);
   }
+  pageLinesByPage[pageKey()]=lineGroups(copyChunks);
 }
 function updateZoomLabel(){zoomLabel.textContent=Math.round(zoomFactor*100)+'%'}
 function setZoom(z){
@@ -523,7 +712,7 @@ file.onchange=async()=>{
   pageNum=Math.max(1,Math.min(doc.numPages,place?.page||1));
   zoomFactor=Math.max(.75,Math.min(3,place?.zoom||1));
   empty.hidden=true;stage.hidden=false;
-  [prev,next,rectTool,circleTool,eraseTool,editBtn,indexBtn,clearIndexBtn,chaptersBtn,zoomToggleBtn].forEach(b=>b.disabled=false);
+  [prev,next,rectTool,circleTool,eraseTool,editBtn,indexBtn,clearIndexBtn,copyBtn,topZoomBtn].forEach(b=>b.disabled=false);
   setTool('rect');setEditMode(false);setIndexMode(false);setZoomMode(false);setChaptersMode(false);
   await loadChapters();
   updateZoomLabel();
@@ -534,8 +723,12 @@ prev.onclick=goPrev;next.onclick=goNext;editBtn.onclick=()=>setEditMode(!editMod
 rectTool.onclick=()=>setTool('rect');circleTool.onclick=()=>setTool('circle');eraseTool.onclick=()=>setTool('erase');
 indexBtn.onclick=()=>setIndexMode(!indexMode);
 clearIndexBtn.onclick=()=>{pinnedIndexes[pageKey()]=[];activeIndex=null;renderIndexCarousel();renderTextHighlights();toast('Page highlights cleared')};
-chaptersBtn.onclick=()=>setChaptersMode(!chaptersMode);
-zoomToggleBtn.onclick=()=>setZoomMode(!zoomMode);
+topZoomBtn.onclick=()=>setZoomMode(!zoomMode);
+copyBtn.onclick=()=>setCopyMode(!copyMode);
+copyLineRange.oninput=()=>updateCopyPreview();
+copyCharStart.oninput=()=>updateCopyPreview();
+copyCharEnd.oninput=()=>updateCopyPreview();
+copyDoBtn.onclick=()=>copyCurrentSelection();
 zoomOut.onclick=()=>setZoom(zoomFactor-.25);
 zoomIn.onclick=()=>setZoom(zoomFactor+.25);
 zoomFit.onclick=()=>setZoom(1);
