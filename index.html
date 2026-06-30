@@ -179,6 +179,114 @@ body:not(.indexing) #viewControls{grid-template-columns:1fr 1fr}
 }
 #copyBtn.active, body.copying #copyBtn{background:rgba(10,132,255,.22)}
 
+
+#copyBtn.active, body.copying #copyBtn{background:rgba(10,132,255,.22)}
+#copyPanel{
+  display:none;
+  margin-bottom:8px;
+  border-radius:25px;
+  padding:10px 56px 38px 10px;
+  gap:10px;
+  align-items:center;
+  position:relative;
+}
+body.copying #copyPanel{display:flex}
+#copyTextPreview{
+  flex:1;
+  min-height:44px;
+  max-height:92px;
+  overflow:hidden;
+  border-radius:17px;
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  padding:8px 10px;
+  font-size:12px;
+  line-height:1.25;
+  font-weight:650;
+}
+#copyDoBtn{
+  border:0;
+  border-radius:17px;
+  height:38px;
+  padding:0 12px;
+  background:rgba(10,132,255,.25);
+  color:var(--text);
+  font-size:13px;
+  font-weight:850;
+}
+#copyLineSlider{
+  position:absolute;
+  right:18px;
+  top:12px;
+  bottom:36px;
+  width:24px;
+  touch-action:none;
+}
+#copyLineSlider::before{
+  content:"";
+  position:absolute;
+  top:0;
+  bottom:0;
+  left:10px;
+  width:4px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+}
+#copyLineFill{
+  position:absolute;
+  left:10px;
+  width:4px;
+  border-radius:999px;
+  background:rgba(10,132,255,.9);
+}
+.copyHandle{
+  position:absolute;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#0a84ff;
+  box-shadow:0 0 0 4px rgba(10,132,255,.18),0 4px 12px rgba(0,0,0,.3);
+  left:0;
+  transform:translateY(-50%);
+  touch-action:none;
+}
+#copyCharSlider{
+  position:absolute;
+  left:18px;
+  right:70px;
+  bottom:12px;
+  height:24px;
+  touch-action:none;
+}
+#copyCharSlider::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:10px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+}
+#copyCharFill{
+  position:absolute;
+  top:10px;
+  height:4px;
+  border-radius:999px;
+  background:rgba(10,132,255,.9);
+}
+.charHandle{
+  position:absolute;
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  background:#0a84ff;
+  box-shadow:0 0 0 4px rgba(10,132,255,.18),0 4px 12px rgba(0,0,0,.3);
+  top:0;
+  transform:translateX(-50%);
+  touch-action:none;
+}
+
 </style>
 </head>
 <body>
@@ -211,6 +319,21 @@ body:not(.indexing) #viewControls{grid-template-columns:1fr 1fr}
   </div>
 
   <div id="bottomArea">
+    <div id="copyPanel" class="frost">
+      <div id="copyTextPreview">Use the right handles to choose start/end lines. Use the bottom handles to trim characters.</div>
+      <button id="copyDoBtn">Copy</button>
+      <div id="copyLineSlider">
+        <div id="copyLineFill"></div>
+        <div id="lineStartHandle" class="copyHandle"></div>
+        <div id="lineEndHandle" class="copyHandle"></div>
+      </div>
+      <div id="copyCharSlider">
+        <div id="copyCharFill"></div>
+        <div id="charStartHandle" class="charHandle"></div>
+        <div id="charEndHandle" class="charHandle"></div>
+      </div>
+    </div>
+
     <div id="chapterPanel" class="frost"></div>
 
     <div id="zoomPanel" class="frost">
@@ -259,12 +382,13 @@ import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs';
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
 
-let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false,refineMode=false,chaptersMode=false,zoomMode=false;
+let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false,refineMode=false,chaptersMode=false,zoomMode=false,copyMode=false;
 let shapesByPage={},start=null,current=null,swipeStart=null;
 let indexItemsByPage={}, activeIndex=null;
 let pinnedIndexes={}; // session only
 let outlineItems=[];
 let pageLinesByPage={};
+let copyLineStart=0, copyLineEnd=0, copyCharStartVal=0, copyCharEndVal=0;
 let zoomFactor=1; // 1 = fit width
 
 const pdfCanvas=pdf, pdfCtx=pdfCanvas.getContext('2d');
@@ -283,6 +407,7 @@ function closePanels(except=''){
   if(except!=='index') { indexMode=false; refineMode=false; document.body.classList.remove('indexing','refining'); activeIndex=null; }
   if(except!=='chapters') { chaptersMode=false; document.body.classList.remove('chapters'); }
   if(except!=='zoom') { zoomMode=false; document.body.classList.remove('zooming'); }
+  if(except!=='copy') { copyMode=false; document.body.classList.remove('copying'); clearCopyHighlightIfNeeded(); }
 }
 function setEditMode(on){
   editMode=on;
@@ -310,6 +435,13 @@ function setZoomMode(on){
   zoomMode=on;
   document.body.classList.toggle('zooming',zoomMode);
   updateZoomLabel();
+}
+function setCopyMode(on){
+  closePanels(on?'copy':'');
+  copyMode=on;
+  document.body.classList.toggle('copying',copyMode);
+  if(copyMode) buildCopyLinesForPage();
+  else clearCopyHighlightIfNeeded();
 }
 function setRefineMode(on){
   if(!activeIndex) return;
@@ -507,22 +639,145 @@ function setZoom(z){
   renderPage(pageNum);
 }
 
-async function copyVisiblePageText(){
-  if(!doc){toast('Open a PDF first');return;}
-  const lines=pageLinesByPage[pageKey()] || [];
-  let text='';
-  if(lines.length) text=lines.map(l=>l.text||'').join('\n');
-  if(!text.trim()){
-    try{
-      const page=await doc.getPage(pageNum);
-      const content=await page.getTextContent();
-      text=content.items.map(i=>i.str||'').join(' ').replace(/\s+/g,' ').trim();
-    }catch{}
+
+
+
+function clearCopyHighlightIfNeeded(){
+  if(!indexMode) clearTextHighlights();
+  else renderTextHighlights();
+}
+function selectedCopyFullText(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length) return '';
+  const a=Math.max(0,Math.min(copyLineStart,copyLineEnd));
+  const b=Math.max(0,Math.max(copyLineStart,copyLineEnd));
+  return lines.slice(a,b+1).map(l=>l.text||'').join('\n');
+}
+function buildCopyLinesForPage(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length){
+    copyTextPreview.textContent='No text found on this page.';
+    return;
   }
-  if(!text.trim()){toast('No text found');return;}
-  try{await navigator.clipboard.writeText(text);toast('Page text copied');}
+  copyLineStart=Math.max(0,Math.min(copyLineStart,lines.length-1));
+  copyLineEnd=Math.max(copyLineStart,Math.min(copyLineEnd||copyLineStart,lines.length-1));
+  const full=selectedCopyFullText();
+  copyCharStartVal=0;
+  copyCharEndVal=full.length;
+  updateCopyPreview();
+}
+function updateCopySliderVisuals(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  const maxLine=Math.max(1,lines.length-1);
+  const a=Math.min(copyLineStart,copyLineEnd)/maxLine;
+  const b=Math.max(copyLineStart,copyLineEnd)/maxLine;
+  lineStartHandle.style.top=(a*100)+'%';
+  lineEndHandle.style.top=(b*100)+'%';
+  copyLineFill.style.top=(a*100)+'%';
+  copyLineFill.style.height=((b-a)*100)+'%';
+
+  const full=selectedCopyFullText();
+  const len=Math.max(1,full.length);
+  const ca=copyCharStartVal/len;
+  const cb=copyCharEndVal/len;
+  charStartHandle.style.left=(ca*100)+'%';
+  charEndHandle.style.left=(cb*100)+'%';
+  copyCharFill.style.left=(ca*100)+'%';
+  copyCharFill.style.width=((cb-ca)*100)+'%';
+}
+function updateCopyPreview(){
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length) return;
+  const full=selectedCopyFullText();
+  const len=full.length;
+  copyCharStartVal=Math.max(0,Math.min(copyCharStartVal,len));
+  copyCharEndVal=Math.max(copyCharStartVal,Math.min(copyCharEndVal||len,len));
+  const selected=full.slice(copyCharStartVal,copyCharEndVal);
+  copyTextPreview.textContent=selected || full || 'Blank line';
+  renderCopyHighlight();
+  updateCopySliderVisuals();
+}
+function renderCopyHighlight(){
+  if(!copyMode) return;
+  clearTextHighlights();
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length) return;
+  const a=Math.min(copyLineStart,copyLineEnd);
+  const b=Math.max(copyLineStart,copyLineEnd);
+  const selectedLines=lines.slice(a,b+1);
+  const full=selectedLines.map(l=>l.text||'').join('\n');
+  const start=copyCharStartVal;
+  const end=copyCharEndVal || full.length;
+  let offset=0;
+  selectedLines.forEach((line)=>{
+    const text=line.text||'';
+    const lineStart=offset;
+    const lineEnd=offset+text.length;
+    const overlapStart=Math.max(start,lineStart);
+    const overlapEnd=Math.min(end,lineEnd);
+    if(overlapEnd>overlapStart){
+      const rect=line.rects?.[0];
+      if(rect){
+        const localStart=(overlapStart-lineStart)/Math.max(1,text.length);
+        const localEnd=(overlapEnd-lineStart)/Math.max(1,text.length);
+        textHi.appendChild(makeHiDiv({
+          x:rect.x+rect.w*localStart,
+          y:rect.y,
+          w:Math.max(.005,rect.w*(localEnd-localStart)),
+          h:rect.h
+        },true));
+      }
+    }
+    offset += text.length + 1;
+  });
+}
+function setCopyLineFromY(clientY, which){
+  const lines=pageLinesByPage[pageKey()]||[];
+  if(!lines.length) return;
+  const r=copyLineSlider.getBoundingClientRect();
+  const pct=Math.max(0,Math.min(1,(clientY-r.top)/Math.max(1,r.height)));
+  const val=Math.round(pct*(lines.length-1));
+  if(which==='start') copyLineStart=Math.min(val,copyLineEnd);
+  else copyLineEnd=Math.max(val,copyLineStart);
+  const full=selectedCopyFullText();
+  copyCharStartVal=0;
+  copyCharEndVal=full.length;
+  updateCopyPreview();
+}
+function setCopyCharFromX(clientX, which){
+  const full=selectedCopyFullText();
+  const r=copyCharSlider.getBoundingClientRect();
+  const pct=Math.max(0,Math.min(1,(clientX-r.left)/Math.max(1,r.width)));
+  const val=Math.round(pct*full.length);
+  if(which==='start') copyCharStartVal=Math.min(val,copyCharEndVal);
+  else copyCharEndVal=Math.max(val,copyCharStartVal);
+  updateCopyPreview();
+}
+function attachHandleDrag(el, moveFn){
+  el.addEventListener('pointerdown',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    el.setPointerCapture(e.pointerId);
+    moveFn(e);
+    const move=ev=>{ev.preventDefault();ev.stopPropagation();moveFn(ev);};
+    const up=ev=>{
+      ev.preventDefault();
+      ev.stopPropagation();
+      try{el.releasePointerCapture(e.pointerId)}catch{}
+      el.removeEventListener('pointermove',move);
+      el.removeEventListener('pointerup',up);
+    };
+    el.addEventListener('pointermove',move);
+    el.addEventListener('pointerup',up);
+  });
+}
+async function copyCurrentSelection(){
+  const full=selectedCopyFullText();
+  const text=full.slice(copyCharStartVal,copyCharEndVal);
+  if(!text.trim()){toast('Nothing to copy');return;}
+  try{await navigator.clipboard.writeText(text);toast('Copied');}
   catch{
-    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Page text copied');
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copied');
   }
 }
 
@@ -541,6 +796,7 @@ async function renderPage(n){
   textLayer.style.width=(vp.width/dpr)+'px';textLayer.style.height=(vp.height/dpr)+'px';
   await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
   await renderTextLayer(page,displayScale);
+  if(copyMode) buildCopyLinesForPage();
   titleSub.textContent=`Page ${pageNum} of ${doc.numPages} • ${Math.round(zoomFactor*100)}%`;
   prev.disabled=pageNum<=1;next.disabled=pageNum>=doc.numPages;
   activeIndex=null;clearTextHighlights();renderPreview();
@@ -574,11 +830,18 @@ indexBtn.onclick=()=>setIndexMode(!indexMode);
 clearIndexBtn.onclick=()=>{pinnedIndexes[pageKey()]=[];activeIndex=null;renderIndexCarousel();renderTextHighlights();toast('Page highlights cleared')};
 chaptersBtn.onclick=()=>setChaptersMode(!chaptersMode);
 topZoomBtn.onclick=()=>setZoomMode(!zoomMode);
-copyBtn.onclick=()=>copyVisiblePageText();
+copyBtn.onclick=()=>setCopyMode(!copyMode);
 zoomOut.onclick=()=>setZoom(zoomFactor-.25);
 zoomIn.onclick=()=>setZoom(zoomFactor+.25);
 zoomFit.onclick=()=>setZoom(1);
 idxPrev.onclick=()=>bumpIndex(-1);idxNext.onclick=()=>bumpIndex(1);
+
+copyDoBtn.onclick=()=>copyCurrentSelection();
+attachHandleDrag(lineStartHandle,e=>setCopyLineFromY(e.clientY,'start'));
+attachHandleDrag(lineEndHandle,e=>setCopyLineFromY(e.clientY,'end'));
+attachHandleDrag(charStartHandle,e=>setCopyCharFromX(e.clientX,'start'));
+attachHandleDrag(charEndHandle,e=>setCopyCharFromX(e.clientX,'end'));
+
 
 function beginSwipe(x,y){
   if(!doc || editMode) return;
