@@ -17,223 +17,96 @@
   --panel-strong:rgba(54,56,64,.86);
   --button:rgba(255,255,255,.12);
   --stroke:rgba(255,255,255,.16);
-  --stroke-strong:rgba(255,255,255,.24);
+  --yellow:rgba(255,214,10,.22);
+  --yellow-stroke:rgba(255,214,10,.86);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{
-  margin:0;
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-  background:#111827;
-  color:var(--text);
+  margin:0;width:100vw;height:100vh;overflow:hidden;background:#111827;color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;
 }
 body{position:relative}
-
-/* keep the winning iOS PWA fix */
 body::before{
-  content:"";
-  position:fixed;
-  left:0;
-  right:0;
-  top:-80px;
-  bottom:-140px;
-  z-index:-1;
+  content:"";position:fixed;left:0;right:0;top:-80px;bottom:-140px;z-index:-1;
   background:
     radial-gradient(circle at 18% 0%, rgba(10,132,255,.14), transparent 34%),
     radial-gradient(circle at 88% 12%, rgba(191,90,242,.12), transparent 32%),
     linear-gradient(145deg,#10131a,#1a1d25 56%,#202633);
 }
-#app{
-  width:100vw;
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-}
+#app{width:100vw;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 .frost{
-  background:var(--panel);
-  backdrop-filter:blur(32px) saturate(1.65);
-  -webkit-backdrop-filter:blur(32px) saturate(1.65);
-  border:1px solid var(--stroke);
-  box-shadow:0 14px 38px rgba(0,0,0,.30), inset 0 1px rgba(255,255,255,.12);
+  background:var(--panel);backdrop-filter:blur(32px) saturate(1.65);-webkit-backdrop-filter:blur(32px) saturate(1.65);
+  border:1px solid var(--stroke);box-shadow:0 14px 38px rgba(0,0,0,.30), inset 0 1px rgba(255,255,255,.12);
 }
-
-/* smaller, cleaner top bar */
-#topArea{
-  flex:0 0 auto;
-  padding:calc(env(safe-area-inset-top) + 8px) 16px 8px;
-}
-#topbar{
-  border-radius:22px;
-  height:48px;
-  padding:5px 46px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-}
-#openBtn{
-  position:absolute;
-  left:6px;
-  top:50%;
-  transform:translateY(-50%);
-}
+#topArea{flex:0 0 auto;padding:calc(env(safe-area-inset-top) + 8px) 16px 8px}
+#topbar{border-radius:22px;height:48px;padding:5px 46px;display:flex;align-items:center;justify-content:center;position:relative}
+#openBtn{position:absolute;left:6px;top:50%;transform:translateY(-50%)}
 .iconBtn{
-  border:0;
-  border-radius:17px;
-  width:36px;
-  height:36px;
-  background:var(--button);
-  color:var(--text);
-  font-size:17px;
-  display:grid;
-  place-items:center;
-  box-shadow:inset 0 1px rgba(255,255,255,.14),0 4px 10px rgba(0,0,0,.18);
+  border:0;border-radius:17px;width:36px;height:36px;background:var(--button);color:var(--text);font-size:17px;
+  display:grid;place-items:center;box-shadow:inset 0 1px rgba(255,255,255,.14),0 4px 10px rgba(0,0,0,.18);
 }
 .iconBtn:disabled{opacity:.35}
-#title{
-  text-align:center;
-  min-width:0;
-  width:100%;
-}
-#titleMain{
-  font-size:15px;
-  line-height:18px;
-  font-weight:760;
-  letter-spacing:-.02em;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
+#title{text-align:center;min-width:0;width:100%}
+#titleMain{font-size:15px;line-height:18px;font-weight:760;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #titleSub{
-  margin:2px auto 0;
-  width:max-content;
-  max-width:160px;
-  border-radius:999px;
-  padding:2px 8px 3px;
-  background:rgba(255,255,255,.09);
-  color:var(--muted);
-  font-size:11px;
-  line-height:12px;
-  font-weight:780;
+  margin:2px auto 0;width:max-content;max-width:160px;border-radius:999px;padding:2px 8px 3px;
+  background:rgba(255,255,255,.09);color:var(--muted);font-size:11px;line-height:12px;font-weight:780;
 }
 #file{position:absolute;left:-9999px}
-
 #viewer{
-  flex:1 1 auto;
-  min-height:0;
-  overflow:auto;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  padding:8px 16px 10px;
-  -webkit-overflow-scrolling:touch;
+  flex:1 1 auto;min-height:0;overflow:auto;display:flex;justify-content:center;align-items:flex-start;
+  padding:8px 16px 10px;-webkit-overflow-scrolling:touch;
 }
 #stage{position:relative}
-canvas{
-  display:block;
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 18px 48px rgba(0,0,0,.24);
-}
-#draw{
-  position:absolute;
-  left:0;
-  top:0;
-  background:transparent;
-  touch-action:none;
-}
-#empty{
-  margin-top:36px;
-  width:min(315px,86vw);
-  border-radius:28px;
-  padding:22px 18px;
-  text-align:center;
-}
-#emptyIcon{
-  width:52px;
-  height:52px;
-  margin:0 auto 12px;
-  border-radius:20px;
-  display:grid;
-  place-items:center;
-  font-size:25px;
-  background:rgba(255,255,255,.11);
-}
-#empty h1{
-  font-size:22px;
-  margin:0 0 6px;
-  letter-spacing:-.03em;
-}
-#empty p{
-  margin:0;
-  color:var(--muted);
-  line-height:1.32;
-  font-size:14px;
-  font-weight:560;
-}
+canvas{display:block;background:#fff;border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,.24)}
+#draw{position:absolute;left:0;top:0;background:transparent;touch-action:none}
+#empty{margin-top:36px;width:min(315px,86vw);border-radius:28px;padding:22px 18px;text-align:center}
+#emptyIcon{width:52px;height:52px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;font-size:25px;background:rgba(255,255,255,.11)}
+#empty h1{font-size:22px;margin:0 0 6px;letter-spacing:-.03em}
+#empty p{margin:0;color:var(--muted);line-height:1.32;font-size:14px;font-weight:560}
 
-/* compact bottom bar, same visual language as top */
-#bottomArea{
-  flex:0 0 auto;
-  padding:6px 16px calc(env(safe-area-inset-bottom) + 8px);
-  background:transparent;
+#bottomArea{flex:0 0 auto;padding:6px 16px calc(env(safe-area-inset-bottom) + 8px);background:transparent}
+#indexPanel{
+  display:none;margin-bottom:6px;border-radius:22px;padding:6px;align-items:center;gap:6px;
+}
+body.indexing #indexPanel{display:flex}
+#indexTrack{
+  flex:1;display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;padding:1px 0;
+}
+#indexTrack::-webkit-scrollbar{display:none}
+.indexChip{
+  flex:0 0 auto;border:0;border-radius:16px;padding:9px 13px;background:rgba(255,255,255,.10);color:var(--text);
+  font-size:14px;font-weight:850;scroll-snap-align:center;
+}
+.indexChip.active{background:rgba(255,214,10,.30);box-shadow:inset 0 0 0 1px rgba(255,214,10,.75)}
+.indexChip.pinned::after{content:" •";color:rgb(255,214,10)}
+.panelBtn{
+  border:0;border-radius:16px;width:34px;height:34px;background:rgba(255,255,255,.10);color:var(--text);font-size:16px;font-weight:900;
 }
 #utilityBar{
-  border-radius:24px;
-  padding:6px;
-  display:grid;
-  grid-template-columns:1fr 38px;
-  gap:6px;
-  align-items:center;
+  border-radius:24px;padding:6px;display:grid;grid-template-columns:38px 1fr 38px 38px;gap:6px;align-items:center;
 }
+.circleNav{
+  border:0;border-radius:50%;width:38px;height:38px;background:var(--button);color:var(--text);
+  font-size:22px;font-weight:850;display:grid;place-items:center;box-shadow:inset 0 1px rgba(255,255,255,.14),0 4px 10px rgba(0,0,0,.18);
+}
+.circleNav:disabled{opacity:.35}
 #centerControls{
-  min-width:0;
-  height:38px;
-  border-radius:18px;
-  background:rgba(255,255,255,.075);
-  padding:3px;
-  display:grid;
-  grid-template-columns:1fr;
+  min-width:0;height:38px;border-radius:18px;background:rgba(255,255,255,.075);padding:3px;display:grid;grid-template-columns:1fr;
   box-shadow:inset 0 1px 4px rgba(0,0,0,.16);
 }
-.actionBtn{
-  border:0;
-  border-radius:15px;
-  background:transparent;
-  color:var(--text);
-  font-size:14px;
-  font-weight:780;
-}
-.actionBtn.active{
-  background:rgba(255,255,255,.16);
-  box-shadow:0 5px 14px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.15);
-}
+.actionBtn{border:0;border-radius:15px;background:transparent;color:var(--text);font-size:13px;font-weight:780}
+.actionBtn.active{background:rgba(255,255,255,.16);box-shadow:0 5px 14px rgba(0,0,0,.20),inset 0 1px rgba(255,255,255,.15)}
 #viewControls{display:grid;grid-template-columns:1fr 1fr;gap:3px}
 #editControls{display:none;grid-template-columns:1fr 1fr 1fr;gap:3px}
 body.editing #viewControls{display:none}
 body.editing #editControls{display:grid}
-body.editing #editBtn{
-  background:linear-gradient(180deg,rgba(10,132,255,.94),rgba(0,102,220,.94));
-  color:white;
-}
+body.editing #editBtn{background:linear-gradient(180deg,rgba(10,132,255,.94),rgba(0,102,220,.94));color:white}
+body.indexing #indexBtn{background:rgba(255,214,10,.20)}
 #toast{
-  position:fixed;
-  z-index:20;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:calc(env(safe-area-inset-bottom) + 74px);
-  padding:8px 12px;
-  border-radius:999px;
-  background:rgba(20,20,30,.82);
-  color:white;
-  font-size:12px;
-  font-weight:750;
-  opacity:0;
-  transition:opacity .2s ease;
-  pointer-events:none;
+  position:fixed;z-index:20;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 112px);
+  padding:8px 12px;border-radius:999px;background:rgba(20,20,30,.82);color:white;font-size:12px;font-weight:750;
+  opacity:0;transition:opacity .2s ease;pointer-events:none;
 }
 #toast.show{opacity:1}
 </style>
@@ -259,16 +132,23 @@ body.editing #editBtn{
     <div id="empty" class="frost">
       <div id="emptyIcon">📄</div>
       <h1>Open a PDF</h1>
-      <p>Swipe pages in view mode. Tap edit to draw or erase shapes.</p>
+      <p>Swipe pages in view mode. Use Index to scan part callouts on the page.</p>
     </div>
   </div>
 
   <div id="bottomArea">
+    <div id="indexPanel" class="frost">
+      <button id="idxPrev" class="panelBtn">‹</button>
+      <div id="indexTrack"></div>
+      <button id="idxNext" class="panelBtn">›</button>
+    </div>
+
     <div id="utilityBar" class="frost">
+      <button id="prev" class="circleNav" disabled>‹</button>
       <div id="centerControls">
         <div id="viewControls">
-          <button id="prev" class="actionBtn" disabled>‹ Prev</button>
-          <button id="next" class="actionBtn" disabled>Next ›</button>
+          <button id="indexBtn" class="actionBtn" disabled>Index</button>
+          <button id="clearIndexBtn" class="actionBtn" disabled>Clear</button>
         </div>
         <div id="editControls">
           <button id="rectTool" class="actionBtn active" disabled>Rect</button>
@@ -276,6 +156,7 @@ body.editing #editBtn{
           <button id="eraseTool" class="actionBtn" disabled>Erase</button>
         </div>
       </div>
+      <button id="next" class="circleNav" disabled>›</button>
       <button id="editBtn" class="iconBtn" disabled aria-label="Edit">✎</button>
     </div>
   </div>
@@ -285,228 +166,205 @@ body.editing #editBtn{
 <script type="module">
 import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs';
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.mjs';
-
 if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js');
 
-let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false;
+let doc=null,pageNum=1,rendering=false,pdfKey='',tool='rect',editMode=false,indexMode=false;
 let shapesByPage={},start=null,current=null,swipeStart=null;
+let indexItemsByPage={}, activeIndex=null, pinnedIndexes={};
 
 const pdfCanvas=pdf, pdfCtx=pdfCanvas.getContext('2d');
 const drawCanvas=draw, drawCtx=drawCanvas.getContext('2d');
 
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer=setTimeout(()=>t.classList.remove('show'),800);
-}
-
-function saveShapes(){
-  if(pdfKey)localStorage.setItem('annotations_'+pdfKey,JSON.stringify(shapesByPage));
-}
-
-function loadShapes(){
-  shapesByPage=JSON.parse(localStorage.getItem('annotations_'+pdfKey)||'{}');
-}
-
-function pageKey(){return String(pageNum);}
-
-function currentShapes(){
-  if(!shapesByPage[pageKey()])shapesByPage[pageKey()]=[];
-  return shapesByPage[pageKey()];
-}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),900)}
+function saveShapes(){if(pdfKey)localStorage.setItem('annotations_'+pdfKey,JSON.stringify(shapesByPage))}
+function loadShapes(){shapesByPage=JSON.parse(localStorage.getItem('annotations_'+pdfKey)||'{}')}
+function savePinned(){if(pdfKey)localStorage.setItem('indexPins_'+pdfKey,JSON.stringify(pinnedIndexes))}
+function loadPinned(){pinnedIndexes=JSON.parse(localStorage.getItem('indexPins_'+pdfKey)||'{}')}
+function pageKey(){return String(pageNum)}
+function currentShapes(){if(!shapesByPage[pageKey()])shapesByPage[pageKey()]=[];return shapesByPage[pageKey()]}
+function pagePins(){if(!pinnedIndexes[pageKey()])pinnedIndexes[pageKey()]=[];return pinnedIndexes[pageKey()]}
 
 function setEditMode(on){
   editMode=on;
+  if(editMode) setIndexMode(false);
   document.body.classList.toggle('editing',editMode);
   editBtn.textContent=editMode?'✓':'✎';
   toast(editMode?'Edit mode':'View mode');
 }
-
+function setIndexMode(on){
+  indexMode=on;
+  document.body.classList.toggle('indexing',indexMode);
+  if(indexMode) scanIndexesForPage();
+  else activeIndex=null;
+  drawAll(false);
+}
 function setTool(t){
-  tool=t;
-  rectTool.classList.toggle('active',t==='rect');
-  circleTool.classList.toggle('active',t==='circle');
-  eraseTool.classList.toggle('active',t==='erase');
+  tool=t;rectTool.classList.toggle('active',t==='rect');circleTool.classList.toggle('active',t==='circle');eraseTool.classList.toggle('active',t==='erase');
 }
+function pos(e){const r=drawCanvas.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height}}
+function makeShape(a,b,type){return{type,x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)}}
 
-function pos(e){
-  const r=drawCanvas.getBoundingClientRect();
-  return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};
+function drawBand(item, active=false){
+  const W=drawCanvas.clientWidth,H=drawCanvas.clientHeight;
+  const y=item.y*H, h=Math.max(18,item.h*H);
+  drawCtx.beginPath();
+  drawCtx.roundRect(4,y,W-8,h,6);
+  drawCtx.fillStyle=active?'rgba(255,214,10,.30)':'rgba(255,214,10,.18)';
+  drawCtx.strokeStyle='rgba(255,214,10,.82)';
+  drawCtx.lineWidth=active?2.5:1.5;
+  drawCtx.fill();drawCtx.stroke();
 }
-
-function makeShape(a,b,type){
-  return{type,x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)};
-}
-
 function drawShape(s){
-  const w0=drawCanvas.clientWidth,h0=drawCanvas.clientHeight,x=s.x*w0,y=s.y*h0,w=s.w*w0,h=s.h*h0;
-  if(s.type==='rect'){
-    drawCtx.beginPath();
-    drawCtx.roundRect(x,y,w,h,7);
-    drawCtx.fill();
-    drawCtx.stroke();
-  }else{
-    drawCtx.beginPath();
-    drawCtx.ellipse(x+w/2,y+h/2,Math.abs(w/2),Math.abs(h/2),0,0,Math.PI*2);
-    drawCtx.fill();
-    drawCtx.stroke();
-  }
+  const W=drawCanvas.clientWidth,H=drawCanvas.clientHeight,x=s.x*W,y=s.y*H,w=s.w*W,h=s.h*H;
+  if(s.type==='rect'){drawCtx.beginPath();drawCtx.roundRect(x,y,w,h,7);drawCtx.fill();drawCtx.stroke();}
+  else{drawCtx.beginPath();drawCtx.ellipse(x+w/2,y+h/2,Math.abs(w/2),Math.abs(h/2),0,0,Math.PI*2);drawCtx.fill();drawCtx.stroke();}
 }
-
 function drawAll(preview=false){
   drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
   const scale=drawCanvas.width/drawCanvas.clientWidth;
-  drawCtx.save();
-  drawCtx.scale(scale,scale);
-  drawCtx.lineWidth=3;
-  drawCtx.strokeStyle='#ff453a';
-  drawCtx.fillStyle='rgba(255,69,58,.13)';
+  drawCtx.save();drawCtx.scale(scale,scale);
+
+  const items=indexItemsByPage[pageKey()]||[];
+  const pins=pagePins();
+  items.forEach(it=>{ if(pins.includes(it.label)) drawBand(it,false); });
+  if(indexMode&&activeIndex) drawBand(activeIndex,true);
+
+  drawCtx.lineWidth=3;drawCtx.strokeStyle='#ff453a';drawCtx.fillStyle='rgba(255,69,58,.13)';
   currentShapes().forEach(drawShape);
-  if(preview&&start&&current)drawShape(makeShape(start,current,tool));
+  if(preview&&start&&current) drawShape(makeShape(start,current,tool));
   drawCtx.restore();
 }
-
 function eraseAt(p){
   const arr=currentShapes();
-  for(let i=arr.length-1;i>=0;i--){
-    const s=arr[i];
-    if(p.x>=s.x&&p.x<=s.x+s.w&&p.y>=s.y&&p.y<=s.y+s.h){
-      arr.splice(i,1);
-      saveShapes();
-      drawAll(false);
-      toast('Shape erased');
-      return true;
-    }
+  for(let i=arr.length-1;i>=0;i--){const s=arr[i];if(p.x>=s.x&&p.x<=s.x+s.w&&p.y>=s.y&&p.y<=s.y+s.h){arr.splice(i,1);saveShapes();drawAll(false);toast('Shape erased');return true;}}
+  toast('No shape hit');return false;
+}
+
+async function scanIndexesForPage(){
+  if(!doc) return;
+  const key=pageKey();
+  if(indexItemsByPage[key]){renderIndexCarousel();return;}
+  const page=await doc.getPage(pageNum);
+  const content=await page.getTextContent();
+  const base=page.getViewport({scale:1});
+  const hits=[];
+  for(const it of content.items){
+    const str=(it.str||'').trim();
+    const m=str.match(/(^|\s)(-\d{1,4}[A-Z]?)(?=\s|$)/i);
+    if(!m) continue;
+    const x=it.transform[4]/base.width;
+    const y=1-(it.transform[5]/base.height);
+    hits.push({label:m[2],x,y});
   }
-  toast('No shape hit');
-  return false;
+  hits.sort((a,b)=>a.y-b.y || a.x-b.x);
+  const unique=[];
+  for(const h of hits){
+    if(unique.some(u=>u.label===h.label && Math.abs(u.y-h.y)<.015)) continue;
+    unique.push(h);
+  }
+  const items=unique.map((h,i)=>{
+    const next=unique[i+1];
+    const end=next ? next.y : Math.min(.98,h.y+.08);
+    return {label:h.label,x:h.x,y:Math.max(0,h.y-.012),h:Math.max(.035, Math.min(.18,end-h.y))};
+  });
+  indexItemsByPage[key]=items;
+  renderIndexCarousel();
+  toast(items.length?`Found ${items.length} indexes`:'No indexes found');
+  drawAll(false);
+}
+function renderIndexCarousel(){
+  const items=indexItemsByPage[pageKey()]||[];
+  indexTrack.innerHTML='';
+  if(!items.length){
+    const b=document.createElement('button');b.className='indexChip';b.textContent='No indexes';indexTrack.appendChild(b);return;
+  }
+  const pins=pagePins();
+  items.forEach((it,i)=>{
+    const b=document.createElement('button');
+    b.className='indexChip';
+    b.textContent=it.label;
+    if(activeIndex&&activeIndex.label===it.label) b.classList.add('active');
+    if(pins.includes(it.label)) b.classList.add('pinned');
+    b.onclick=()=>{
+      activeIndex=it;
+      const arr=pagePins();
+      const idx=arr.indexOf(it.label);
+      if(idx>=0) arr.splice(idx,1); else arr.push(it.label);
+      savePinned(); renderIndexCarousel(); drawAll(false);
+      toast(idx>=0?`${it.label} unpinned`:`${it.label} pinned`);
+    };
+    b.onpointerenter=()=>{activeIndex=it;drawAll(false)};
+    b.onfocus=()=>{activeIndex=it;drawAll(false)};
+    indexTrack.appendChild(b);
+  });
+}
+function bumpIndex(dir){
+  const items=indexItemsByPage[pageKey()]||[];
+  if(!items.length) return;
+  let i=activeIndex?items.findIndex(x=>x.label===activeIndex.label):-1;
+  i=(i+dir+items.length)%items.length;
+  activeIndex=items[i];
+  renderIndexCarousel();
+  drawAll(false);
+  const chip=indexTrack.children[i];
+  if(chip) chip.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
 }
 
 async function renderPage(n){
-  if(!doc||rendering)return;
-  rendering=true;
-
+  if(!doc||rendering)return;rendering=true;
   const page=await doc.getPage(n);
   const base=page.getViewport({scale:1});
   const displayScale=(Math.max(280,viewer.clientWidth-4))/base.width;
   const dpr=window.devicePixelRatio||1;
   const vp=page.getViewport({scale:displayScale*dpr});
-
-  [pdfCanvas,drawCanvas].forEach(c=>{
-    c.width=Math.floor(vp.width);
-    c.height=Math.floor(vp.height);
-    c.style.width=(vp.width/dpr)+'px';
-    c.style.height=(vp.height/dpr)+'px';
-  });
-
-  stage.style.width=(vp.width/dpr)+'px';
-  stage.style.height=(vp.height/dpr)+'px';
-
+  [pdfCanvas,drawCanvas].forEach(c=>{c.width=Math.floor(vp.width);c.height=Math.floor(vp.height);c.style.width=(vp.width/dpr)+'px';c.style.height=(vp.height/dpr)+'px';});
+  stage.style.width=(vp.width/dpr)+'px';stage.style.height=(vp.height/dpr)+'px';
   await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
-
   titleSub.textContent=`Page ${pageNum} of ${doc.numPages}`;
-  prev.disabled=pageNum<=1;
-  next.disabled=pageNum>=doc.numPages;
-  drawAll(false);
-  rendering=false;
+  prev.disabled=pageNum<=1;next.disabled=pageNum>=doc.numPages;
+  activeIndex=null;
+  if(indexMode) await scanIndexesForPage();
+  drawAll(false);rendering=false;
 }
-
-function goPrev(){if(pageNum>1){pageNum--;renderPage(pageNum);}}
-function goNext(){if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum);}}
+function goPrev(){if(pageNum>1){pageNum--;renderPage(pageNum)}}
+function goNext(){if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum)}}
 
 openBtn.onclick=()=>file.click();
-
 file.onchange=async()=>{
-  const f=file.files[0];
-  if(!f)return;
-
-  pdfKey=f.name;
-  titleMain.textContent=f.name;
-  loadShapes();
-
-  doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
-  pageNum=1;
-
-  empty.hidden=true;
-  stage.hidden=false;
-
-  [prev,next,rectTool,circleTool,eraseTool,editBtn].forEach(b=>b.disabled=false);
-  setTool('rect');
-  setEditMode(false);
-  await renderPage(pageNum);
+  const f=file.files[0];if(!f)return;
+  pdfKey=f.name;titleMain.textContent=f.name;loadShapes();loadPinned();indexItemsByPage={};
+  doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;pageNum=1;
+  empty.hidden=true;stage.hidden=false;
+  [prev,next,rectTool,circleTool,eraseTool,editBtn,indexBtn,clearIndexBtn].forEach(b=>b.disabled=false);
+  setTool('rect');setEditMode(false);setIndexMode(false);await renderPage(pageNum);
 };
-
-prev.onclick=goPrev;
-next.onclick=goNext;
-editBtn.onclick=()=>setEditMode(!editMode);
-rectTool.onclick=()=>setTool('rect');
-circleTool.onclick=()=>setTool('circle');
-eraseTool.onclick=()=>setTool('erase');
+prev.onclick=goPrev;next.onclick=goNext;editBtn.onclick=()=>setEditMode(!editMode);
+rectTool.onclick=()=>setTool('rect');circleTool.onclick=()=>setTool('circle');eraseTool.onclick=()=>setTool('erase');
+indexBtn.onclick=()=>setIndexMode(!indexMode);
+clearIndexBtn.onclick=()=>{pinnedIndexes[pageKey()]=[];savePinned();activeIndex=null;renderIndexCarousel();drawAll(false);toast('Page highlights cleared')};
+idxPrev.onclick=()=>bumpIndex(-1);idxNext.onclick=()=>bumpIndex(1);
 
 drawCanvas.addEventListener('pointerdown',e=>{
-  if(!doc)return;
-  drawCanvas.setPointerCapture(e.pointerId);
-  const p=pos(e);
-
-  if(!editMode){
-    swipeStart={x:e.clientX,y:e.clientY,t:Date.now()};
-    start=null;
-    return;
-  }
-
-  if(tool==='erase'){
-    eraseAt(p);
-    start=null;
-    return;
-  }
-
-  start=p;
-  current=start;
+  if(!doc)return;drawCanvas.setPointerCapture(e.pointerId);const p=pos(e);
+  if(!editMode){swipeStart={x:e.clientX,y:e.clientY,t:Date.now()};start=null;return;}
+  if(tool==='erase'){eraseAt(p);start=null;return;}
+  start=p;current=start;
 });
-
-drawCanvas.addEventListener('pointermove',e=>{
-  if(editMode&&start&&tool!=='erase'){
-    current=pos(e);
-    drawAll(true);
-  }
-});
-
+drawCanvas.addEventListener('pointermove',e=>{if(editMode&&start&&tool!=='erase'){current=pos(e);drawAll(true)}});
 drawCanvas.addEventListener('pointerup',e=>{
   if(!doc)return;
-
   if(!editMode&&swipeStart){
-    const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y,dt=Date.now()-swipeStart.t;
-    swipeStart=null;
-
-    if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4&&dt<700){
-      dx<0?goNext():goPrev();
-      return;
-    }
+    const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y,dt=Date.now()-swipeStart.t;swipeStart=null;
+    if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.4&&dt<700){dx<0?goNext():goPrev();return;}
     return;
   }
-
   if(editMode&&start&&tool!=='erase'){
-    current=pos(e);
-    const s=makeShape(start,current,tool);
-    start=null;
-    current=null;
-
-    if(s.w>.01&&s.h>.01){
-      currentShapes().push(s);
-      saveShapes();
-    }
+    current=pos(e);const s=makeShape(start,current,tool);start=null;current=null;
+    if(s.w>.01&&s.h>.01){currentShapes().push(s);saveShapes();}
     drawAll(false);
   }
 });
-
-let resizeTimer=null;
-addEventListener('resize',()=>{
-  if(!doc)return;
-  clearTimeout(resizeTimer);
-  resizeTimer=setTimeout(()=>renderPage(pageNum),250);
-});
+let resizeTimer=null;addEventListener('resize',()=>{if(!doc)return;clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>renderPage(pageNum),250)});
 </script>
 </body>
 </html>
