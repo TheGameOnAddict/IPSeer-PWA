@@ -4,74 +4,218 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111827">
+<meta name="theme-color" content="#eef2ff">
 <title>PDF Markup</title>
 <style>
-:root{color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;background:#111827;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+:root{
+  color-scheme:light;
+  --text:#101014;
+  --muted:rgba(20,20,30,.58);
+  --blue:#007aff;
+  --red:#ff3b30;
+  --glass:rgba(255,255,255,.52);
+  --glass-strong:rgba(255,255,255,.72);
+  --stroke:rgba(255,255,255,.62);
+  --shadow:0 18px 55px rgba(31,41,55,.22);
+  --viewer1:#e0e7ff;
+  --viewer2:#f8fafc;
+  --viewer3:#dbeafe;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 20% 5%, rgba(0,122,255,.22), transparent 34%),
+    radial-gradient(circle at 90% 18%, rgba(191,90,242,.20), transparent 32%),
+    linear-gradient(145deg,var(--viewer2),var(--viewer1) 52%,var(--viewer3));
+}
+#app{height:100vh;display:flex;flex-direction:column;position:relative}
+.glass{
+  background:var(--glass);
+  backdrop-filter:blur(28px) saturate(1.75);
+  -webkit-backdrop-filter:blur(28px) saturate(1.75);
+  border:1px solid rgba(255,255,255,.54);
+  box-shadow:var(--shadow);
+}
 #topbar{
-  height:calc(54px + env(safe-area-inset-top));
-  padding:calc(8px + env(safe-area-inset-top)) 10px 8px;
-  background:#111827;
-  border-bottom:1px solid rgba(255,255,255,.14);
-  display:flex;
+  position:absolute;
+  z-index:5;
+  left:10px;
+  right:10px;
+  top:calc(8px + env(safe-area-inset-top));
+  border-radius:28px;
+  padding:8px;
+  display:grid;
+  grid-template-columns:72px 1fr 72px;
   align-items:center;
   gap:8px;
 }
 #file{position:absolute;left:-9999px}
-.btn{
-  border:0;border-radius:12px;background:#2563eb;color:white;
-  padding:9px 12px;font-size:15px;font-weight:600;white-space:nowrap;
+.textBtn{
+  border:0;
+  background:rgba(255,255,255,.42);
+  color:var(--blue);
+  border-radius:20px;
+  height:42px;
+  font-size:17px;
+  font-weight:700;
+  box-shadow:inset 0 1px rgba(255,255,255,.8);
 }
-.btn:disabled{opacity:.4}
-.btn.tool{background:#374151}
-.btn.active{background:#f59e0b;color:#111827}
-.btn.danger{background:#dc2626}
-#title{
-  flex:1;min-width:0;text-align:center;font-size:15px;font-weight:700;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+.textBtn.danger{color:var(--red)}
+.textBtn:disabled{opacity:.35}
+#title{text-align:center;min-width:0}
+#titleMain{
+  font-size:18px;
+  line-height:22px;
+  font-weight:800;
+  letter-spacing:-.02em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#titleSub{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:1px;
+  font-weight:650;
 }
 #viewer{
-  height:calc(100vh - 54px - 74px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  flex:1;
   overflow:auto;
-  background:#374151;
   display:flex;
   justify-content:center;
   align-items:flex-start;
-  padding:12px;
+  padding:calc(78px + env(safe-area-inset-top)) 10px calc(132px + env(safe-area-inset-bottom));
 }
 #stage{position:relative}
-canvas{display:block;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.4);border-radius:3px}
-#draw{position:absolute;left:0;top:0;background:transparent;touch-action:none}
-#empty{margin-top:80px;color:#d1d5db;text-align:center;line-height:1.35;max-width:280px}
-#bottombar{
-  height:calc(74px + env(safe-area-inset-bottom));
-  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
-  background:#111827;
-  border-top:1px solid rgba(255,255,255,.14);
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr;
-  gap:8px;
+canvas{
+  display:block;
+  background:#fff;
+  border-radius:14px;
+  box-shadow:0 22px 60px rgba(0,0,0,.22);
 }
+#draw{position:absolute;left:0;top:0;background:transparent;touch-action:none}
+#empty{
+  margin-top:45px;
+  width:min(340px,90vw);
+  border-radius:34px;
+  padding:26px 22px;
+  text-align:center;
+}
+#emptyIcon{
+  width:62px;height:62px;margin:0 auto 14px;
+  border-radius:23px;
+  display:grid;place-items:center;
+  font-size:30px;
+  background:linear-gradient(145deg,rgba(255,255,255,.95),rgba(255,255,255,.38));
+  box-shadow:inset 0 1px rgba(255,255,255,.9),0 12px 28px rgba(0,122,255,.12);
+}
+#empty h1{font-size:25px;margin:0 0 8px;letter-spacing:-.03em}
+#empty p{margin:0;color:var(--muted);line-height:1.35;font-size:15px;font-weight:550}
+#toolbar{
+  position:absolute;
+  z-index:5;
+  left:10px;
+  right:10px;
+  bottom:calc(8px + env(safe-area-inset-bottom));
+  border-radius:32px;
+  padding:9px;
+}
+#segmented{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+  padding:4px;
+  background:rgba(120,120,128,.16);
+  border-radius:23px;
+  margin-bottom:9px;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.08);
+}
+.seg{
+  border:0;
+  border-radius:19px;
+  background:transparent;
+  color:var(--text);
+  padding:10px 4px;
+  font-size:15px;
+  font-weight:800;
+}
+.seg.active{
+  background:rgba(255,255,255,.82);
+  box-shadow:0 7px 18px rgba(0,0,0,.12), inset 0 1px rgba(255,255,255,.9);
+}
+#bottomrow{
+  display:grid;
+  grid-template-columns:1fr 92px 1fr;
+  gap:8px;
+  align-items:center;
+}
+.pillBtn{
+  border:0;
+  border-radius:22px;
+  background:rgba(255,255,255,.58);
+  color:var(--blue);
+  min-height:48px;
+  font-size:17px;
+  font-weight:800;
+  box-shadow:inset 0 1px rgba(255,255,255,.85),0 5px 14px rgba(0,0,0,.08);
+}
+.pillBtn:disabled{opacity:.35}
 #pagePill{
-  background:#1f2937;
-  border-radius:12px;
+  min-height:48px;
+  border-radius:22px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:14px;
-  font-weight:700;
-  padding:0 6px;
+  background:rgba(20,20,30,.08);
+  color:var(--text);
+  font-size:15px;
+  font-weight:850;
+  letter-spacing:-.01em;
+  box-shadow:inset 0 1px 4px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --text:#f5f5f7;
+    --muted:rgba(245,245,247,.58);
+    --blue:#0a84ff;
+    --red:#ff453a;
+    --glass:rgba(30,30,34,.54);
+    --glass-strong:rgba(44,44,46,.68);
+    --stroke:rgba(255,255,255,.16);
+    --viewer1:#111827;
+    --viewer2:#050509;
+    --viewer3:#1f2937;
+  }
+  body{
+    background:
+      radial-gradient(circle at 18% 2%, rgba(10,132,255,.24), transparent 35%),
+      radial-gradient(circle at 90% 12%, rgba(191,90,242,.18), transparent 33%),
+      linear-gradient(145deg,var(--viewer2),var(--viewer1) 58%,var(--viewer3));
+  }
+  .glass{border-color:rgba(255,255,255,.14);box-shadow:0 18px 55px rgba(0,0,0,.38)}
+  .textBtn,.pillBtn{background:rgba(255,255,255,.10);box-shadow:inset 0 1px rgba(255,255,255,.14)}
+  .seg.active{background:rgba(255,255,255,.16);box-shadow:0 7px 18px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.18)}
+  #pagePill,#segmented{background:rgba(255,255,255,.08)}
+  #emptyIcon{background:linear-gradient(145deg,rgba(255,255,255,.20),rgba(255,255,255,.08))}
 }
 </style>
 </head>
 <body>
-  <div id="topbar">
+<div id="app">
+  <div id="topbar" class="glass">
+    <button id="openBtn" class="textBtn">Open</button>
+    <div id="title">
+      <div id="titleMain">PDF Markup</div>
+      <div id="titleSub">Local annotations</div>
+    </div>
+    <button id="clearPage" class="textBtn danger" disabled>Clear</button>
     <input id="file" type="file" accept="application/pdf">
-    <button id="openBtn" class="btn">Open PDF</button>
-    <div id="title">PDF Markup</div>
-    <button id="clearPage" class="btn danger" disabled>Clear</button>
   </div>
 
   <div id="viewer">
@@ -79,15 +223,25 @@ canvas{display:block;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.4);border
       <canvas id="pdf"></canvas>
       <canvas id="draw"></canvas>
     </div>
-    <div id="empty">Open a PDF, then draw rectangles or circles. Markups save locally by file name.</div>
+    <div id="empty" class="glass">
+      <div id="emptyIcon">📄</div>
+      <h1>Open a PDF</h1>
+      <p>Mark up pages with rectangles or circles. Everything saves locally on this phone.</p>
+    </div>
   </div>
 
-  <div id="bottombar">
-    <button id="prev" class="btn" disabled>‹ Prev</button>
-    <div id="pagePill">No PDF</div>
-    <button id="next" class="btn" disabled>Next ›</button>
-    <button id="toolToggle" class="btn tool" disabled>Rect</button>
+  <div id="toolbar" class="glass">
+    <div id="segmented">
+      <button id="rectTool" class="seg active" disabled>Rectangle</button>
+      <button id="circleTool" class="seg" disabled>Circle</button>
+    </div>
+    <div id="bottomrow">
+      <button id="prev" class="pillBtn" disabled>‹ Prev</button>
+      <div id="pagePill">No PDF</div>
+      <button id="next" class="pillBtn" disabled>Next ›</button>
+    </div>
   </div>
+</div>
 
 <script type="module">
 import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs';
@@ -101,50 +255,25 @@ let shapesByPage={},start=null,current=null;
 const pdfCanvas=pdf, pdfCtx=pdfCanvas.getContext('2d');
 const drawCanvas=draw, drawCtx=drawCanvas.getContext('2d');
 
-function saveShapes(){
-  if(pdfKey) localStorage.setItem('annotations_'+pdfKey,JSON.stringify(shapesByPage));
-}
-function loadShapes(){
-  shapesByPage=JSON.parse(localStorage.getItem('annotations_'+pdfKey)||'{}');
-}
-function pageKey(){return String(pageNum)}
-function currentShapes(){
-  if(!shapesByPage[pageKey()]) shapesByPage[pageKey()]=[];
-  return shapesByPage[pageKey()];
-}
-function displayRect(){
-  return {w:drawCanvas.clientWidth,h:drawCanvas.clientHeight};
-}
+function saveShapes(){ if(pdfKey) localStorage.setItem('annotations_'+pdfKey,JSON.stringify(shapesByPage)); }
+function loadShapes(){ shapesByPage=JSON.parse(localStorage.getItem('annotations_'+pdfKey)||'{}'); }
+function pageKey(){ return String(pageNum); }
+function currentShapes(){ if(!shapesByPage[pageKey()]) shapesByPage[pageKey()]=[]; return shapesByPage[pageKey()]; }
+
 function pos(e){
   const r=drawCanvas.getBoundingClientRect();
-  const p=e.touches?e.touches[0]:e;
-  return {
-    x:(p.clientX-r.left)/r.width,
-    y:(p.clientY-r.top)/r.height
-  };
+  return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};
 }
 function makeShape(a,b,type){
-  return {
-    type,
-    x:Math.min(a.x,b.x),
-    y:Math.min(a.y,b.y),
-    w:Math.abs(b.x-a.x),
-    h:Math.abs(b.y-a.y)
-  };
+  return {type,x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(b.x-a.x),h:Math.abs(b.y-a.y)};
 }
 function drawShape(s){
-  const d=displayRect();
-  const x=s.x*d.w, y=s.y*d.h, w=s.w*d.w, h=s.h*d.h;
+  const w0=drawCanvas.clientWidth,h0=drawCanvas.clientHeight;
+  const x=s.x*w0,y=s.y*h0,w=s.w*w0,h=s.h*h0;
   if(s.type==='rect'){
-    drawCtx.beginPath();
-    drawCtx.rect(x,y,w,h);
-    drawCtx.fill();
-    drawCtx.stroke();
+    drawCtx.beginPath(); drawCtx.roundRect(x,y,w,h,6); drawCtx.fill(); drawCtx.stroke();
   }else{
-    drawCtx.beginPath();
-    drawCtx.ellipse(x+w/2,y+h/2,Math.abs(w/2),Math.abs(h/2),0,0,Math.PI*2);
-    drawCtx.fill();
-    drawCtx.stroke();
+    drawCtx.beginPath(); drawCtx.ellipse(x+w/2,y+h/2,Math.abs(w/2),Math.abs(h/2),0,0,Math.PI*2); drawCtx.fill(); drawCtx.stroke();
   }
 }
 function drawAll(preview=false){
@@ -153,25 +282,24 @@ function drawAll(preview=false){
   drawCtx.save();
   drawCtx.scale(scale,scale);
   drawCtx.lineWidth=3;
-  drawCtx.strokeStyle='#ef4444';
-  drawCtx.fillStyle='rgba(239,68,68,.12)';
+  drawCtx.strokeStyle='#ff3b30';
+  drawCtx.fillStyle='rgba(255,59,48,.13)';
   currentShapes().forEach(drawShape);
   if(preview&&start&&current) drawShape(makeShape(start,current,tool));
   drawCtx.restore();
 }
 function setTool(t){
   tool=t;
-  toolToggle.textContent=t==='rect'?'Rect':'Circle';
-  toolToggle.classList.toggle('active',t==='circle');
+  rectTool.classList.toggle('active',t==='rect');
+  circleTool.classList.toggle('active',t==='circle');
 }
 
 async function renderPage(n){
   if(!doc||rendering)return;
   rendering=true;
-
   const page=await doc.getPage(n);
   const base=page.getViewport({scale:1});
-  const displayScale=(Math.max(280,viewer.clientWidth-24))/base.width;
+  const displayScale=(Math.max(280,viewer.clientWidth-20))/base.width;
   const dpr=window.devicePixelRatio||1;
   const vp=page.getViewport({scale:displayScale*dpr});
 
@@ -191,6 +319,7 @@ async function renderPage(n){
   await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
 
   pagePill.textContent=`${pageNum} / ${doc.numPages}`;
+  titleSub.textContent=`Page ${pageNum} of ${doc.numPages}`;
   prev.disabled=pageNum<=1;
   next.disabled=pageNum>=doc.numPages;
   drawAll(false);
@@ -202,20 +331,21 @@ openBtn.onclick=()=>file.click();
 file.onchange=async()=>{
   const f=file.files[0]; if(!f)return;
   pdfKey=f.name;
-  title.textContent=f.name;
+  titleMain.textContent=f.name;
   loadShapes();
   doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
   pageNum=1;
   empty.hidden=true;
   stage.hidden=false;
-  prev.disabled=false; next.disabled=false; toolToggle.disabled=false; clearPage.disabled=false;
+  [prev,next,rectTool,circleTool,clearPage].forEach(b=>b.disabled=false);
   setTool('rect');
   await renderPage(pageNum);
 };
 
-prev.onclick=()=>{if(pageNum>1){pageNum--;renderPage(pageNum);}};
-next.onclick=()=>{if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum);}};
-toolToggle.onclick=()=>setTool(tool==='rect'?'circle':'rect');
+prev.onclick=()=>{ if(pageNum>1){pageNum--;renderPage(pageNum);} };
+next.onclick=()=>{ if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum);} };
+rectTool.onclick=()=>setTool('rect');
+circleTool.onclick=()=>setTool('circle');
 
 clearPage.onclick=()=>{
   if(!doc)return;
@@ -227,8 +357,7 @@ clearPage.onclick=()=>{
 drawCanvas.addEventListener('pointerdown',e=>{
   if(!doc)return;
   drawCanvas.setPointerCapture(e.pointerId);
-  start=pos(e);
-  current=start;
+  start=pos(e); current=start;
 });
 drawCanvas.addEventListener('pointermove',e=>{
   if(!start)return;
@@ -240,10 +369,7 @@ drawCanvas.addEventListener('pointerup',e=>{
   current=pos(e);
   const s=makeShape(start,current,tool);
   start=null; current=null;
-  if(s.w>.01&&s.h>.01){
-    currentShapes().push(s);
-    saveShapes();
-  }
+  if(s.w>.01&&s.h>.01){ currentShapes().push(s); saveShapes(); }
   drawAll(false);
 });
 
