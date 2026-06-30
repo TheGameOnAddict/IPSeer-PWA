@@ -1,5 +1,5 @@
 {
-  "name": "PDF Annotate Test",
+  "name": "PDF Markup",
   "short_name": "PDF Markup",
   "start_url": "./index.html",
   "display": "standalone",

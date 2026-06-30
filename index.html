@@ -2,42 +2,92 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#111827">
-<title>PDF Annotate Test</title>
+<title>PDF Markup</title>
 <style>
-body{margin:0;background:#111827;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:hidden}
-header{display:flex;gap:6px;align-items:center;padding:12px;background:#111827;border-bottom:1px solid #444;overflow-x:auto}
-button,input::file-selector-button{background:#2563eb;color:#fff;border:0;border-radius:10px;padding:9px 12px;white-space:nowrap}
-button.active{background:#f59e0b;color:#111}
-button.danger{background:#dc2626}
-#pageInfo{margin-left:auto;white-space:nowrap}
-#viewer{height:calc(100vh - 58px);overflow:auto;display:flex;justify-content:center;padding:12px;background:#374151;box-sizing:border-box}
+:root{color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:#111827;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow:hidden}
+#topbar{
+  height:calc(54px + env(safe-area-inset-top));
+  padding:calc(8px + env(safe-area-inset-top)) 10px 8px;
+  background:#111827;
+  border-bottom:1px solid rgba(255,255,255,.14);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+#file{position:absolute;left:-9999px}
+.btn{
+  border:0;border-radius:12px;background:#2563eb;color:white;
+  padding:9px 12px;font-size:15px;font-weight:600;white-space:nowrap;
+}
+.btn:disabled{opacity:.4}
+.btn.tool{background:#374151}
+.btn.active{background:#f59e0b;color:#111827}
+.btn.danger{background:#dc2626}
+#title{
+  flex:1;min-width:0;text-align:center;font-size:15px;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+#viewer{
+  height:calc(100vh - 54px - 74px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow:auto;
+  background:#374151;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:12px;
+}
 #stage{position:relative}
-canvas{display:block;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+canvas{display:block;background:#fff;box-shadow:0 8px 20px rgba(0,0,0,.4);border-radius:3px}
 #draw{position:absolute;left:0;top:0;background:transparent;touch-action:none}
-#msg{margin-top:70px;color:#ddd}
+#empty{margin-top:80px;color:#d1d5db;text-align:center;line-height:1.35;max-width:280px}
+#bottombar{
+  height:calc(74px + env(safe-area-inset-bottom));
+  padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  background:#111827;
+  border-top:1px solid rgba(255,255,255,.14);
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:8px;
+}
+#pagePill{
+  background:#1f2937;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:700;
+  padding:0 6px;
+}
 </style>
 </head>
 <body>
-<header>
-<input id="file" type="file" accept="application/pdf">
-<button id="prev" disabled>Prev</button>
-<button id="next" disabled>Next</button>
-<button id="rectTool" disabled>Rect</button>
-<button id="circleTool" disabled>Circle</button>
-<button id="clearPage" class="danger" disabled>Clear</button>
-<span id="pageInfo">No PDF</span>
-</header>
-
-<div id="viewer">
-  <div id="stage" hidden>
-    <canvas id="pdf"></canvas>
-    <canvas id="draw"></canvas>
+  <div id="topbar">
+    <input id="file" type="file" accept="application/pdf">
+    <button id="openBtn" class="btn">Open PDF</button>
+    <div id="title">PDF Markup</div>
+    <button id="clearPage" class="btn danger" disabled>Clear</button>
   </div>
-  <div id="msg">Choose a PDF</div>
-</div>
+
+  <div id="viewer">
+    <div id="stage" hidden>
+      <canvas id="pdf"></canvas>
+      <canvas id="draw"></canvas>
+    </div>
+    <div id="empty">Open a PDF, then draw rectangles or circles. Markups save locally by file name.</div>
+  </div>
+
+  <div id="bottombar">
+    <button id="prev" class="btn" disabled>‹ Prev</button>
+    <div id="pagePill">No PDF</div>
+    <button id="next" class="btn" disabled>Next ›</button>
+    <button id="toolToggle" class="btn tool" disabled>Rect</button>
+  </div>
 
 <script type="module">
 import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.mjs';
@@ -52,57 +102,26 @@ const pdfCanvas=pdf, pdfCtx=pdfCanvas.getContext('2d');
 const drawCanvas=draw, drawCtx=drawCanvas.getContext('2d');
 
 function saveShapes(){
-  if(!pdfKey)return;
-  localStorage.setItem('annotations_'+pdfKey, JSON.stringify(shapesByPage));
+  if(pdfKey) localStorage.setItem('annotations_'+pdfKey,JSON.stringify(shapesByPage));
 }
 function loadShapes(){
-  shapesByPage = JSON.parse(localStorage.getItem('annotations_'+pdfKey) || '{}');
+  shapesByPage=JSON.parse(localStorage.getItem('annotations_'+pdfKey)||'{}');
 }
+function pageKey(){return String(pageNum)}
 function currentShapes(){
-  const key=String(pageNum);
-  if(!shapesByPage[key]) shapesByPage[key]=[];
-  return shapesByPage[key];
+  if(!shapesByPage[pageKey()]) shapesByPage[pageKey()]=[];
+  return shapesByPage[pageKey()];
 }
-function setTool(t){
-  tool=t;
-  rectTool.classList.toggle('active',t==='rect');
-  circleTool.classList.toggle('active',t==='circle');
-}
-function drawAll(preview=false){
-  drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
-  const scale = drawCanvas.width / drawCanvas.clientWidth;
-  drawCtx.save();
-  drawCtx.scale(scale,scale);
-  drawCtx.lineWidth=3;
-  drawCtx.strokeStyle='#ef4444';
-  drawCtx.fillStyle='rgba(239,68,68,.12)';
-  for(const s of currentShapes()){
-    drawShape(s);
-  }
-  if(preview && start && current){
-    drawShape(makeShape(start,current,tool));
-  }
-  drawCtx.restore();
-}
-function drawShape(s){
-  if(s.type==='rect'){
-    drawCtx.beginPath();
-    drawCtx.rect(s.x,s.y,s.w,s.h);
-    drawCtx.fill();
-    drawCtx.stroke();
-  } else if(s.type==='circle'){
-    const cx=s.x+s.w/2, cy=s.y+s.h/2;
-    const r=Math.max(Math.abs(s.w),Math.abs(s.h))/2;
-    drawCtx.beginPath();
-    drawCtx.ellipse(cx,cy,Math.abs(s.w)/2,Math.abs(s.h)/2,0,0,Math.PI*2);
-    drawCtx.fill();
-    drawCtx.stroke();
-  }
+function displayRect(){
+  return {w:drawCanvas.clientWidth,h:drawCanvas.clientHeight};
 }
 function pos(e){
   const r=drawCanvas.getBoundingClientRect();
-  const touch=e.touches ? e.touches[0] : e;
-  return {x:touch.clientX-r.left,y:touch.clientY-r.top};
+  const p=e.touches?e.touches[0]:e;
+  return {
+    x:(p.clientX-r.left)/r.width,
+    y:(p.clientY-r.top)/r.height
+  };
 }
 function makeShape(a,b,type){
   return {
@@ -113,58 +132,94 @@ function makeShape(a,b,type){
     h:Math.abs(b.y-a.y)
   };
 }
+function drawShape(s){
+  const d=displayRect();
+  const x=s.x*d.w, y=s.y*d.h, w=s.w*d.w, h=s.h*d.h;
+  if(s.type==='rect'){
+    drawCtx.beginPath();
+    drawCtx.rect(x,y,w,h);
+    drawCtx.fill();
+    drawCtx.stroke();
+  }else{
+    drawCtx.beginPath();
+    drawCtx.ellipse(x+w/2,y+h/2,Math.abs(w/2),Math.abs(h/2),0,0,Math.PI*2);
+    drawCtx.fill();
+    drawCtx.stroke();
+  }
+}
+function drawAll(preview=false){
+  drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+  const scale=drawCanvas.width/drawCanvas.clientWidth;
+  drawCtx.save();
+  drawCtx.scale(scale,scale);
+  drawCtx.lineWidth=3;
+  drawCtx.strokeStyle='#ef4444';
+  drawCtx.fillStyle='rgba(239,68,68,.12)';
+  currentShapes().forEach(drawShape);
+  if(preview&&start&&current) drawShape(makeShape(start,current,tool));
+  drawCtx.restore();
+}
+function setTool(t){
+  tool=t;
+  toolToggle.textContent=t==='rect'?'Rect':'Circle';
+  toolToggle.classList.toggle('active',t==='circle');
+}
 
 async function renderPage(n){
   if(!doc||rendering)return;
   rendering=true;
+
   const page=await doc.getPage(n);
   const base=page.getViewport({scale:1});
   const displayScale=(Math.max(280,viewer.clientWidth-24))/base.width;
   const dpr=window.devicePixelRatio||1;
   const vp=page.getViewport({scale:displayScale*dpr});
 
-  pdfCanvas.width=vp.width;
-  pdfCanvas.height=vp.height;
+  pdfCanvas.width=Math.floor(vp.width);
+  pdfCanvas.height=Math.floor(vp.height);
   pdfCanvas.style.width=(vp.width/dpr)+'px';
   pdfCanvas.style.height=(vp.height/dpr)+'px';
 
-  drawCanvas.width=vp.width;
-  drawCanvas.height=vp.height;
+  drawCanvas.width=Math.floor(vp.width);
+  drawCanvas.height=Math.floor(vp.height);
   drawCanvas.style.width=(vp.width/dpr)+'px';
   drawCanvas.style.height=(vp.height/dpr)+'px';
+
   stage.style.width=(vp.width/dpr)+'px';
   stage.style.height=(vp.height/dpr)+'px';
 
   await page.render({canvasContext:pdfCtx,viewport:vp}).promise;
 
-  pageInfo.textContent=`Page ${pageNum} / ${doc.numPages}`;
+  pagePill.textContent=`${pageNum} / ${doc.numPages}`;
   prev.disabled=pageNum<=1;
   next.disabled=pageNum>=doc.numPages;
   drawAll(false);
   rendering=false;
 }
 
+openBtn.onclick=()=>file.click();
+
 file.onchange=async()=>{
   const f=file.files[0]; if(!f)return;
-  pdfKey=f.name; // easy version: annotations are tied to the file name
+  pdfKey=f.name;
+  title.textContent=f.name;
   loadShapes();
   doc=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
   pageNum=1;
-  msg.hidden=true;
+  empty.hidden=true;
   stage.hidden=false;
-  prev.disabled=false; next.disabled=false; rectTool.disabled=false; circleTool.disabled=false; clearPage.disabled=false;
+  prev.disabled=false; next.disabled=false; toolToggle.disabled=false; clearPage.disabled=false;
   setTool('rect');
-  renderPage(pageNum);
+  await renderPage(pageNum);
 };
 
 prev.onclick=()=>{if(pageNum>1){pageNum--;renderPage(pageNum);}};
 next.onclick=()=>{if(doc&&pageNum<doc.numPages){pageNum++;renderPage(pageNum);}};
-rectTool.onclick=()=>setTool('rect');
-circleTool.onclick=()=>setTool('circle');
+toolToggle.onclick=()=>setTool(tool==='rect'?'circle':'rect');
 
 clearPage.onclick=()=>{
   if(!doc)return;
-  shapesByPage[String(pageNum)]=[];
+  shapesByPage[pageKey()]=[];
   saveShapes();
   drawAll(false);
 };
@@ -185,13 +240,19 @@ drawCanvas.addEventListener('pointerup',e=>{
   current=pos(e);
   const s=makeShape(start,current,tool);
   start=null; current=null;
-  if(s.w>8 && s.h>8){
+  if(s.w>.01&&s.h>.01){
     currentShapes().push(s);
     saveShapes();
   }
   drawAll(false);
 });
-addEventListener('resize',()=>doc&&renderPage(pageNum));
+
+let resizeTimer=null;
+addEventListener('resize',()=>{
+  if(!doc)return;
+  clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(()=>renderPage(pageNum),250);
+});
 </script>
 </body>
 </html>
