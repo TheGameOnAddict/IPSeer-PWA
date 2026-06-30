@@ -1,9 +1,9 @@
 {
-  "name": "PDF Markup",
-  "short_name": "PDF Markup",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#1c1f27",
-  "theme_color": "#1c1f27",
-  "icons": []
+  "name":"Layout Test",
+  "short_name":"Layout Test",
+  "display":"standalone",
+  "start_url":"./index.html",
+  "background_color":"#12141a",
+  "theme_color":"#12141a",
+  "icons":[]
 }
