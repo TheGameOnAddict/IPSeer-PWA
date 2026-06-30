@@ -369,6 +369,58 @@ body.copying .charHandle{
   touch-action:none;
 }
 
+
+/* v32 zoom behavior:
+   Normal mode prevents sideways drift.
+   Zoom mode unlocks panning so you can move around a zoomed page.
+*/
+body.zooming #viewer{
+  overflow:auto !important;
+  touch-action:auto !important;
+  overscroll-behavior:auto !important;
+  -webkit-overflow-scrolling:touch !important;
+}
+body:not(.zooming) #viewer{
+  overflow-x:hidden !important;
+  overscroll-behavior-x:none !important;
+}
+
+/* v32 copy handle position fix */
+body.copying #copyLineSlider{
+  position:fixed !important;
+  z-index:50 !important;
+  right:8px !important;
+  top:calc(env(safe-area-inset-top) + 98px) !important;
+  bottom:auto !important;
+  height:58vh !important;
+  width:46px !important;
+  display:block !important;
+  pointer-events:auto !important;
+  touch-action:none !important;
+}
+body.copying #copyLineSlider::before{left:21px !important}
+body.copying #copyLineFill{left:21px !important}
+body.copying .copyHandle{
+  width:36px !important;
+  height:36px !important;
+  left:5px !important;
+}
+body.copying #copyCharSlider{
+  position:fixed !important;
+  z-index:50 !important;
+  left:22px !important;
+  right:22px !important;
+  bottom:calc(env(safe-area-inset-bottom) + 70px) !important;
+  height:40px !important;
+  display:block !important;
+  pointer-events:auto !important;
+  touch-action:none !important;
+}
+body.copying .charHandle{
+  width:36px !important;
+  height:36px !important;
+}
+
 </style>
 </head>
 <body>
@@ -517,6 +569,7 @@ function setZoomMode(on){
   zoomMode=on;
   document.body.classList.toggle('zooming',zoomMode);
   updateZoomLabel();
+  toast(zoomMode ? 'Zoom pan unlocked' : 'Zoom pan locked');
 }
 function setCopyMode(on){
   closePanels(on?'copy':'');
@@ -714,12 +767,20 @@ async function renderTextLayer(page, displayScale){
   if(typeof lineGroups==='function') pageLinesByPage[pageKey()]=lineGroups(copyChunks);
 }
 function updateZoomLabel(){zoomLabel.textContent=Math.round(zoomFactor*100)+'%'}
-function setZoom(z){
-  zoomFactor=Math.max(.75,Math.min(3,z));
+function setZoomAroundCenter(nextZoom){
+  const oldW=stage.clientWidth || 1;
+  const oldH=stage.clientHeight || 1;
+  const centerX=(viewer.scrollLeft + viewer.clientWidth/2)/oldW;
+  const centerY=(viewer.scrollTop + viewer.clientHeight/2)/oldH;
+  zoomFactor=Math.max(.75,Math.min(3,nextZoom));
   updateZoomLabel();
   savePlace();
-  renderPage(pageNum);
+  renderPage(pageNum).then(()=>{
+    viewer.scrollLeft=Math.max(0,stage.clientWidth*centerX - viewer.clientWidth/2);
+    viewer.scrollTop=Math.max(0,stage.clientHeight*centerY - viewer.clientHeight/2);
+  });
 }
+function setZoom(z){ setZoomAroundCenter(z); }
 
 
 
@@ -924,12 +985,12 @@ async function renderPage(n){
   activeIndex=null;clearTextHighlights();renderPreview();
   if(indexMode) await scanIndexesForPage();
   drawAll(false);renderTextHighlights();rendering=false;
-  if(n===pageNum){viewer.scrollLeft=0; viewer.scrollTop=oldY;}
+  if(n===pageNum){viewer.scrollLeft=(zoomFactor>1.01?oldX:0); viewer.scrollTop=oldY;}
   savePlace();
 }
 
 function lockHorizontalViewport(){
-  if(viewer) viewer.scrollLeft=0;
+  if(viewer && !zoomMode && zoomFactor<=1.01) viewer.scrollLeft=0;
 }
 
 function goPrev(){if(pageNum>1){pageNum--;renderPage(pageNum)}}
@@ -971,7 +1032,7 @@ attachHandleDrag(charEndHandle,e=>setCopyCharFromX(e.clientX,'end'));
 
 
 function beginSwipe(x,y){
-  if(!doc || editMode) return;
+  if(!doc || editMode || zoomMode) return;
   swipeStart={x,y,t:Date.now(),sx:viewer.scrollLeft,sy:viewer.scrollTop};
 }
 function endSwipe(x,y){
