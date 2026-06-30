@@ -1,6 +1,6 @@
 {
-  "name": "PDF Markup",
-  "short_name": "PDF Markup",
+  "name": "IPSeer",
+  "short_name": "IPSeer",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#111827",
