@@ -1047,6 +1047,62 @@ body.refining #lineRefiner:before{
   line-height:1;
 }
 
+
+/* v45: row-aligned rail indicators instead of large stacked pills */
+.indexAssocMarker{
+  display:block !important;
+  position:absolute !important;
+  left:0 !important;
+  width:100% !important;
+  min-height:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  pointer-events:auto !important;
+}
+.indexAssocMarker .assocLabel{
+  display:none !important;
+}
+.indexAssocMarker .assocDots{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  gap:3px;
+  align-items:center;
+  padding:2px 3px;
+  border-radius:999px;
+  background:rgba(20,26,36,.66);
+  box-shadow:0 1px 5px rgba(0,0,0,.22);
+}
+.indexAssocMarker .assocDots::after{
+  content:"";
+  position:absolute;
+  left:100%;
+  top:50%;
+  width:16px;
+  height:1px;
+  background:rgba(20,26,36,.45);
+}
+.indexAssocMarker .miniDot{
+  width:5px !important;
+  height:5px !important;
+  border-radius:50%;
+  display:block;
+}
+.indexAssocMarker:active .assocDots{
+  transform:translateY(-50%) scale(1.35);
+  background:rgba(20,26,36,.86);
+}
+body.copying #indexAssocMarkers,
+body.editing #indexAssocMarkers{
+  display:none !important;
+}
+
 </style>
 </head>
 <body>
@@ -1750,6 +1806,7 @@ function chipBadgesForIndex(it){
 function clearIndexAssocMarkers(){
   if(typeof indexAssocMarkers!=='undefined') indexAssocMarkers.innerHTML='';
 }
+
 function renderIndexAssocMarkers(){
   if(typeof indexAssocMarkers==='undefined' || !doc || stage.hidden) return;
   clearIndexAssocMarkers();
@@ -1766,24 +1823,27 @@ function renderIndexAssocMarkers(){
     if(!hasNote && !hasCollection && !hasLink) return;
 
     const rects=itemRects(it);
-    const r=rects[0] || {x:0,y:Math.min(.95,.05+i*.035),w:0,h:.02};
-    const marker=document.createElement('button');
-    marker.className='indexAssocMarker';
-    marker.setAttribute('aria-label',`${it.label} saved items`);
+    const r=rects[0] || {x:.08,y:Math.min(.95,.05+i*.035),w:.12,h:.012};
+    const row=document.createElement('button');
+    row.className='indexAssocMarker';
+    row.setAttribute('aria-label',`${it.label} saved items`);
+
     let dots='';
     if(hasNote) dots+='<span class="miniDot note"></span>';
     if(hasCollection) dots+='<span class="miniDot collection"></span>';
     if(hasLink) dots+='<span class="miniDot link"></span>';
-    marker.innerHTML=`<span class="assocLabel">${it.label}</span>${dots}`;
 
-    // Put the marker next to the exact index line. If there is no room, keep it inside the page.
-    const rawLeft=(r.x+r.w)*W+5;
-    const left=Math.max(4,Math.min(W-58,rawLeft));
-    const top=Math.max(4,Math.min(H-24,(r.y*H)-2));
-    marker.style.left=left+'px';
-    marker.style.top=top+'px';
+    // Tiny visible dots sit in the left gutter next to the exact IPC line.
+    // The full row is tappable, so close lines are still easy to select without big stacked pills.
+    const lineH=Math.max(9,Math.min(14,(r.h||.012)*H+3));
+    const top=Math.max(2,Math.min(H-lineH,(r.y*H)-1));
+    const dotLeft=Math.max(4,Math.min(W-44,(r.x*W)-24));
 
-    marker.onclick=(e)=>{
+    row.style.top=top+'px';
+    row.style.height=lineH+'px';
+    row.innerHTML=`<span class="assocDots" style="left:${dotLeft}px">${dots}</span>`;
+
+    row.onclick=(e)=>{
       e.stopPropagation();
       activeIndex=it;
       rememberSelectedIndex(it);
@@ -1792,15 +1852,16 @@ function renderIndexAssocMarkers(){
       renderIndexCarousel();
       openIndexObjectMenu(it,assoc);
     };
-    indexAssocMarkers.appendChild(marker);
+    indexAssocMarkers.appendChild(row);
   });
 }
+
 function openIndexObjectMenu(it,assoc=workspaceItemsForIndex(it.label,pageNum)){
   setWorkspaceMode(true);
   workspaceBody.innerHTML='';
   const back=document.createElement('button');
   back.className='workspaceRow';
-  back.innerHTML=`<div><div class="workspaceRowTitle">${it.label} saved items</div><div class="workspaceRowMeta">Tap an item to jump/open</div></div><span></span>`;
+  back.innerHTML=`<div><div class="workspaceRowTitle">${it.label} saved items</div><div class="workspaceRowMeta">Line indicator opened this exact index</div></div><span></span>`;
   back.onclick=()=>renderWorkspace();
   workspaceBody.appendChild(back);
 
